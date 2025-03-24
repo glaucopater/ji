@@ -1,0 +1,45 @@
+.movement-node {
+  position: relative;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 0.5rem;
+  min-width: 200px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.movement-node-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.movement-node-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.movement-node-title {
+  font-weight: 600;
+  color: #333;
+}
+
+.movement-node-type {
+  font-size: 0.875rem;
+  color: #666;
+}
+
+.movement-node .react-flow__handle {
+  width: 8px;
+  height: 8px;
+  background-color: #007bff;
+}
+
+.movement-node .react-flow__handle-top {
+  top: -4px;
+}
+
+.movement-node .react-flow__handle-bottom {
+  bottom: -4px;
+} 

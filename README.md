@@ -124,3 +124,8 @@ Potential areas for future development:
 - Physics-based interactions
 - Performance optimizations
 - Mobile responsiveness improvements
+
+
+# GoKyo
+
+# https://en.wikipedia.org/wiki/List_of_Kodokan_judo_techniques

@@ -1,93 +1,104 @@
-import { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
 import { Scene } from './components/Scene';
-import { TechniqueCard } from './components/TechniqueCard';
+import { TechniqueEditor } from './components/flow/TechniqueEditor';
 import { techniques } from './data/techniques';
+import { useState } from 'react';
 import { JudoTechnique } from './types/techniques';
 import './App.css';
 
-export function App() {
-  const [selectedTechnique, setSelectedTechnique] = useState<JudoTechnique | undefined>();
-
-  // Debug mount
-  useEffect(() => {
-    console.log('App component mounted');
-    console.log('Available techniques:', techniques.map(t => t.name));
-  }, []);
+function Viewer() {
+  const [selectedTechnique, setSelectedTechnique] = useState<JudoTechnique | undefined>(undefined);
+  const [isWalking, setIsWalking] = useState(false);
 
   const handleTechniqueClick = (technique: JudoTechnique) => {
-    console.log('=== Technique Selection Debug ===');
-    console.log('handleTechniqueClick called with:', technique.name);
-    
     if (technique.isToggle) {
-      // For toggle techniques (like walking), toggle the state
-      if (selectedTechnique?.id === technique.id) {
-        console.log('Turning off toggle technique:', technique.name);
-        setSelectedTechnique(undefined);
-        // Stop the animation immediately when toggled off
-        const scene = document.querySelector('.scene-container');
-        if (scene) {
-          scene.dispatchEvent(new CustomEvent('animationComplete'));
-        }
-      } else {
-        console.log('Turning on toggle technique:', technique.name);
-        setSelectedTechnique(technique);
-      }
+      setIsWalking(!isWalking);
+      setSelectedTechnique(isWalking ? undefined : technique);
     } else {
-      // For regular techniques, just play once
-      console.log('Playing regular technique:', technique.name);
       setSelectedTechnique(technique);
     }
   };
 
   const handleAnimationComplete = () => {
-    console.log('=== Animation Complete Debug ===');
-    console.log('Previous technique:', selectedTechnique?.name);
-    
-    // Only clear the selection if it's not a toggle technique
-    if (selectedTechnique && !selectedTechnique.isToggle) {
-      console.log('Clearing non-toggle technique');
+    if (!selectedTechnique?.isToggle) {
       setSelectedTechnique(undefined);
     }
   };
 
-  // Debug selected technique changes
-  useEffect(() => {
-    console.log('Selected technique changed to:', selectedTechnique?.name);
-  }, [selectedTechnique]);
-
-  // Separate regular techniques and toggle techniques
-  const regularTechniques = techniques.filter(t => !t.isToggle);
+  // Separate toggle techniques from regular techniques
   const toggleTechniques = techniques.filter(t => t.isToggle);
+  const regularTechniques = techniques.filter(t => !t.isToggle);
 
   return (
-    <div className="app-container">
+    <div className="app">
       <div className="techniques-grid">
         {/* Toggle techniques at the top */}
         {toggleTechniques.map((technique) => (
-          <TechniqueCard
+          <div
             key={technique.id}
-            technique={technique}
+            className={`technique-card ${selectedTechnique?.id === technique.id ? 'selected' : ''}`}
             onClick={() => handleTechniqueClick(technique)}
-            isSelected={selectedTechnique?.id === technique.id}
-            isToggle={true}
-          />
+          >
+            <h3>{technique.name}</h3>
+            <p>{technique.japaneseName}</p>
+            <p>{technique.description}</p>
+            <div className="technique-meta">
+              <span className="category">{technique.category}</span>
+              <span className="difficulty">{technique.difficulty}</span>
+              <span className="toggle-status">{isWalking ? 'ON' : 'OFF'}</span>
+            </div>
+          </div>
         ))}
+
         {/* Regular techniques below */}
         {regularTechniques.map((technique) => (
-          <TechniqueCard
+          <div
             key={technique.id}
-            technique={technique}
+            className={`technique-card ${selectedTechnique?.id === technique.id ? 'selected' : ''}`}
             onClick={() => handleTechniqueClick(technique)}
-            isSelected={selectedTechnique?.id === technique.id}
-          />
+          >
+            <h3>{technique.name}</h3>
+            <p>{technique.japaneseName}</p>
+            <p>{technique.description}</p>
+            <div className="technique-meta">
+              <span className="category">{technique.category}</span>
+              <span className="difficulty">{technique.difficulty}</span>
+            </div>
+          </div>
         ))}
       </div>
+
       <div className="scene-container">
-        <Scene 
+        <Scene
           selectedTechnique={selectedTechnique}
           onAnimationComplete={handleAnimationComplete}
         />
       </div>
     </div>
+  );
+}
+
+function Navigation() {
+  return (
+    <nav className="navigation">
+      <NavLink to="/" end>Viewer</NavLink>
+      <NavLink to="/editor">Editor</NavLink>
+    </nav>
+  );
+}
+
+export function App() {
+  return (
+    <Router>
+      <div className="app-container">
+        <Navigation />
+        <div className="app">
+          <Routes>
+            <Route path="/" element={<Viewer />} />
+            <Route path="/editor" element={<TechniqueEditor />} />
+          </Routes>
+        </div>
+      </div>
+    </Router>
   );
 } 
