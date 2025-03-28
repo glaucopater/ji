@@ -20,9 +20,12 @@ const jointToRefMap = {
   upperArmRight: 'upperArmRightRef',
   lowerArmRight: 'lowerArmRightRef',
   upperLegLeft: 'upperLegLeftRef',
+  kneeLeft: 'kneeLeftRef',
   lowerLegLeft: 'lowerLegLeftRef',
   upperLegRight: 'upperLegRightRef',
-  lowerLegRight: 'lowerLegRightRef'
+  kneeRight: 'kneeRightRef',
+  lowerLegRight: 'lowerLegRightRef',
+  spine: 'spineRef'
 } as const;
 
 export function useHumanoidAnimation(refs: JointRefs) {

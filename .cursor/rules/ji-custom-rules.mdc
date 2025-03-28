@@ -7,12 +7,14 @@ You are an expert in TypeScript, Node.js, Vite, Yarn,  Next.js App Router, React
 
 Key Principles
 - Write concise, technical TypeScript code with accurate examples.
+- Avoid loops, when you propose a solution check if this was not already propososed. If was already done, inform me about this and find a different strategy
 - Use functional and declarative programming patterns; avoid classes if possible
 - Prefer iteration and modularization over code duplication.
 - Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError).
 - Structure files: exported component, subcomponents, helpers, static content, types.
 - Avoid files longer than 150-200 lines of code.
 - When I tell you that the feature is working fine, than: document it in the readme.md, add unit tests
+- If I tell you "loop" or "rabbit hole" it means that you are not doing any progress, change strategy
   
 
 Naming Conventions

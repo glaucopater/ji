@@ -132,5 +132,53 @@ export const techniques: JudoTechnique[] = [
       ],
       loop: true
     }
+  },
+  {
+    id: 'crouching',
+    name: 'Deep Crouch',
+    japaneseName: 'Shizentai',
+    description: 'Deep crouching stance with proper biomechanical alignment',
+    category: 'Stance',
+    difficulty: 'Intermediate',
+    animation: {
+      keyframes: [
+        {
+          // Starting position - standing
+          upperLegLeft: { x: 0 },
+          upperLegRight: { x: 0 },
+          kneeLeft: { x: 0 },
+          kneeRight: { x: 0 },
+          lowerLegLeft: { x: 0 },
+          lowerLegRight: { x: 0 },
+          upperArmLeft: { x: 0 },
+          upperArmRight: { x: 0 },
+          lowerArmLeft: { x: 0 },
+          lowerArmRight: { x: 0 },
+          spine: { x: 0 },
+          duration: 0.5
+        },
+        {
+          // Deep crouch position
+          // Hip flexion (bending at hips)
+          upperLegLeft: { x: rad(90) }, // Deep hip flexion
+          upperLegRight: { x: rad(90) },
+          // Knee flexion (bending knees)
+          kneeLeft: { x: rad(120) }, // Deeper knee flexion
+          kneeRight: { x: rad(120) },
+          // Ankle dorsiflexion (keeping feet flat on ground)
+          lowerLegLeft: { x: rad(60) }, // Increased ankle dorsiflexion
+          lowerLegRight: { x: rad(60) },
+          // Arms move forward with bent elbows
+          upperArmLeft: { x: rad(45) }, // Arms forward
+          upperArmRight: { x: rad(45) },
+          lowerArmLeft: { x: rad(45) }, // Elbows bent
+          lowerArmRight: { x: rad(45) },
+          // Torso bends forward significantly
+          spine: { x: rad(90) }, // Bend forward 90 degrees to get head near floor
+          duration: 1.0
+        }
+      ],
+      loop: true
+    }
   }
 ]; 

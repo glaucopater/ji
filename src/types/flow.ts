@@ -6,8 +6,10 @@ export type LimbType =
   | 'lowerArmLeft'
   | 'lowerArmRight'
   | 'upperLegLeft'
-  | 'upperLegRight'
+  | 'kneeLeft'
   | 'lowerLegLeft'
+  | 'upperLegRight'
+  | 'kneeRight'
   | 'lowerLegRight'
   | 'torso'
   | 'head';
