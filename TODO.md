@@ -1,12 +1,19 @@
 # Model
 
-- head should be an oval ✅
 - improve hand: 6 elements and bigger
-- arms size are wrong ✅
 - increase shoulder size 
-- knees are not visible
-
+- head should be an oval ✅
+- arms size are wrong ✅
+- knees are not visible ✅
 
 # Editor
 
 - now i reloaded the app, click on any card nothing happens
+
+# Tests
+- Remove warnings (paused because of Vite)
+- Investigate Testing logic with R3F
+
+# Fix  
+
+- Websocket
