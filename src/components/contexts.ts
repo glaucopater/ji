@@ -1,8 +1,8 @@
-import React from 'react';
-import { LimbId } from './Scene';
+import React from "react";
+import { LimbId } from "../types/viewer";
 
 export interface AxisControl {
-  axis: 'x' | 'y' | 'z';
+  axis: "x" | "y" | "z";
   value: number;
   onChange: (value: number) => void;
   min: number;
@@ -27,4 +27,4 @@ export const ActiveLimbContext = React.createContext<ActiveLimbContextType>({
 export const AxisControlsContext = React.createContext<AxisControlsContextType>({
   controls: [],
   setControls: () => {},
-}); 
+});

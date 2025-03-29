@@ -1,7 +1,6 @@
 import { Group } from "three";
 import { InteractiveLimb } from "./Scene";
 import { Hand } from "./Hand";
-import { forwardRef } from "react";
 import { Joint } from "./Joint";
 
 export const LeftArm = ({

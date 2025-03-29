@@ -1,15 +1,16 @@
-import { render } from '@testing-library/react';
-import { InteractiveLimb, LimbId } from '../Scene';
-import { ActiveLimbContext, AxisControlsContext } from '../contexts';
-import * as THREE from 'three';
+import { render } from "@testing-library/react";
+import { InteractiveLimb } from "../Scene";
+import { ActiveLimbContext, AxisControlsContext } from "../contexts";
+import * as THREE from "three";
+import { LimbId } from "../../types/viewer";
 
 // Mock localStorage
 const mockLocalStorage = {
   getItem: jest.fn(),
   setItem: jest.fn(),
-  clear: jest.fn()
+  clear: jest.fn(),
 };
-Object.defineProperty(window, 'localStorage', { value: mockLocalStorage });
+Object.defineProperty(window, "localStorage", { value: mockLocalStorage });
 
 // Mock ref for the group
 const mockGroupRef = {
@@ -18,9 +19,9 @@ const mockGroupRef = {
       x: 0,
       y: 0,
       z: 0,
-      set: jest.fn()
-    }
-  } as unknown as THREE.Group
+      set: jest.fn(),
+    },
+  } as unknown as THREE.Group,
 };
 
 // Mock context values
@@ -28,12 +29,12 @@ const mockSetActiveLimbId = jest.fn();
 const mockSetControls = jest.fn();
 
 // Mock R3F components
-jest.mock('@react-three/fiber', () => ({
+jest.mock("@react-three/fiber", () => ({
   useFrame: jest.fn(),
   useThree: () => ({
     camera: { position: { set: jest.fn() } },
     scene: { add: jest.fn(), remove: jest.fn() },
-    gl: { domElement: document.createElement('div') },
+    gl: { domElement: document.createElement("div") },
   }),
   Canvas: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   extend: jest.fn(),
@@ -43,8 +44,8 @@ jest.mock('@react-three/fiber', () => ({
 }));
 
 // Mock @react-three/drei
-jest.mock('@react-three/drei', () => ({
-  OrbitControls: () => null
+jest.mock("@react-three/drei", () => ({
+  OrbitControls: () => null,
 }));
 
 // Helper function to render with context providers
@@ -54,7 +55,7 @@ function renderWithProviders(
     activeLimbId: null as LimbId | null,
     setActiveLimbId: mockSetActiveLimbId,
     controls: [],
-    setControls: mockSetControls
+    setControls: mockSetControls,
   }
 ) {
   return render(
@@ -66,7 +67,7 @@ function renderWithProviders(
   );
 }
 
-describe('InteractiveLimb', () => {
+describe("InteractiveLimb", () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockLocalStorage.getItem.mockReturnValue(null);
@@ -75,24 +76,18 @@ describe('InteractiveLimb', () => {
     mockSetControls.mockClear();
   });
 
-  it('loads saved position from localStorage on mount', () => {
+  it("loads saved position from localStorage on mount", () => {
     const savedPosition = {
       upperArmLeft: {
-        rotation: { x: 0.5, y: 0.3, z: 0.1 }
-      }
+        rotation: { x: 0.5, y: 0.3, z: 0.1 },
+      },
     };
     mockLocalStorage.getItem.mockReturnValue(JSON.stringify(savedPosition));
 
     renderWithProviders(
-      <InteractiveLimb
-        limbId="upperArmLeft"
-        geometry={[0.5, 0.5, 2]}
-        color="#ffffff"
-        position={[0, 0, 0]}
-        groupRef={mockGroupRef}
-      />
+      <InteractiveLimb limbId='upperArmLeft' geometry={[0.5, 0.5, 2]} color='#ffffff' position={[0, 0, 0]} groupRef={mockGroupRef} />
     );
 
     expect(mockGroupRef.current.rotation.set).toHaveBeenCalledWith(0.5, 0.3, 0.1);
   });
-}); 
+});

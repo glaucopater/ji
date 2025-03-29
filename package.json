@@ -1,16 +1,14 @@
 {
-  "name": "react-three-vite",
-  "version": "1.0.2",
-  "description": "A simple React Three Fiber + Vite starter with an import-ready CodeSandbox config.",
+  "name": "ji",
+  "version": "1.0.3",
+  "description": "A Judo Training Platform",
   "keywords": [
     "r3f",
     "react",
     "three",
     "vite",
-    "starter",
     "react three fiber",
-    "sandbox",
-    "codesandbox"
+    "judo"
   ],
   "license": "MIT",
   "dependencies": {
@@ -39,7 +37,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "ts-jest": "^29.2.6",
     "typescript": "^5.3.3",
-    "vite": "^5.1.3"
+    "vite": "^6.2.3"
   },
   "scripts": {
     "dev": "vite",
