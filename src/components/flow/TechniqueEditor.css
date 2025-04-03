@@ -2,17 +2,19 @@
   display: flex;
   flex-direction: column;
   height: 100vh;
-  background-color: #f5f5f5;
+  padding: 20px;
+  gap: 20px;
+  background: #f5f5f5;
   width: 100%;
 }
 
 .editor-controls {
   display: flex;
-  gap: 1rem;
-  padding: 1rem;
-  background-color: white;
-  border-bottom: 1px solid #e0e0e0;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  gap: 10px;
+  padding: 10px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .editor-controls input,
@@ -67,89 +69,92 @@
 .editor-container {
   display: flex;
   flex: 1;
+  gap: 20px;
+  min-height: 0;
+}
+
+.editor-sidebar {
+  width: 300px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
   overflow: hidden;
 }
 
-.saved-techniques {
-  width: 300px;
-  background-color: white;
-  border-right: 1px solid #e0e0e0;
-  overflow-y: auto;
-  padding: 1rem;
-  display: flex;
-  flex-direction: column;
+.flow-container {
+  flex: 1;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  overflow: hidden;
 }
 
-.saved-techniques h3 {
-  margin: 0 0 1rem 0;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e0e0e0;
-  color: #333;
-  font-size: 1.2rem;
+.node-editor-panel {
+  width: 300px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  padding: 20px;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.panel-header button {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+}
+
+.saved-techniques {
+  padding: 20px;
 }
 
 .saved-technique-item {
-  padding: 1rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 4px;
-  margin-bottom: 1rem;
+  padding: 15px;
+  border: 1px solid #eee;
+  border-radius: 8px;
+  margin-bottom: 10px;
   cursor: pointer;
   transition: all 0.2s;
-  background-color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
 .saved-technique-item:hover {
-  background-color: #f8f9fa;
-  border-color: #4a90e2;
-  transform: translateX(4px);
+  background: #f9f9f9;
 }
 
 .saved-technique-item.active {
-  border-color: #4a90e2;
-  background-color: #f0f7ff;
+  border-color: #4CAF50;
+  background: #E8F5E9;
 }
 
 .saved-technique-item h4 {
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 5px 0;
   color: #333;
-  font-size: 1.1rem;
 }
 
 .saved-technique-item p {
   margin: 0;
   color: #666;
-  font-size: 0.9rem;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  font-size: 14px;
 }
 
 .saved-technique-item button {
-  margin-top: 0.5rem;
-  padding: 0.25rem 0.5rem;
-  background-color: #ff4444;
+  padding: 5px 10px;
+  background: #ff5252;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
-  font-size: 0.9rem;
-  transition: background-color 0.2s;
-}
-
-.saved-technique-item button:hover {
-  background-color: #cc0000;
-}
-
-.flow-container {
-  flex: 1;
-  position: relative;
-  background-color: white;
-}
-
-.flow-container .react-flow {
-  width: 100%;
-  height: 100%;
 }
 
 .no-technique-selected {
@@ -158,52 +163,92 @@
   align-items: center;
   height: 100%;
   color: #666;
-  font-size: 1.2rem;
-  text-align: center;
-  padding: 2rem;
 }
 
-.node-editor-panel {
-  position: absolute;
-  right: 0;
-  top: 0;
-  width: 300px;
-  height: 100%;
-  background-color: white;
-  border-left: 1px solid #e0e0e0;
-  padding: 1rem;
-  overflow-y: auto;
-  box-shadow: -2px 0 4px rgba(0, 0, 0, 0.1);
-}
-
-.panel-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-.panel-header h3 {
-  margin: 0;
-  color: #333;
-  font-size: 1.2rem;
-}
-
-.panel-header button {
-  background: none;
+.create-button {
+  background: #4CAF50;
+  color: white;
   border: none;
-  font-size: 1.5rem;
+  padding: 10px 20px;
+  border-radius: 4px;
   cursor: pointer;
-  color: #666;
-  padding: 0.25rem;
-  line-height: 1;
-  transition: color 0.2s;
 }
 
-.panel-header button:hover {
+.tab-panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.tab-buttons {
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.tab-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  background: #f5f5f5;
+  color: #666;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-button:hover {
+  background: #e0e0e0;
+}
+
+.tab-button.active {
+  background: #4CAF50;
+  color: white;
+}
+
+.tab-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.positions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Position Cards */
+.position-card {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 1rem;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.position-card:hover {
+  transform: scale(1.02);
+}
+
+.position-card h4 {
+  margin: 0 0 0.5rem 0;
   color: #333;
+  font-size: 1rem;
+}
+
+.position-card p {
+  margin: 0;
+  color: #666;
+  font-size: 0.8rem;
+}
+
+.position-card .timestamp {
+  color: #999;
+  font-size: 0.7rem;
+  margin-top: 0.5rem;
 }
 
 .react-flow__node {
@@ -319,11 +364,6 @@
 
 .cancel-button:hover {
   background-color: #d0d0d0;
-}
-
-.create-button {
-  background-color: #4a90e2;
-  color: white;
 }
 
 .create-button:hover {

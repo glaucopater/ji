@@ -1,4 +1,4 @@
-# Judo Animation Application
+# JI
 
 A React-based 3D animation system for visualizing judo techniques using Three.js and React Three Fiber.
 
