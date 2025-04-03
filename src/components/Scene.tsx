@@ -1,6 +1,6 @@
 import { Canvas, useThree } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
-import { Suspense, useRef, useEffect, useState } from "react";
+import { Suspense, useRef, useEffect, useState, useCallback } from "react";
 import React from "react";
 import * as THREE from "three";
 import "../types/global.d";
@@ -25,6 +25,7 @@ import { TabPanel } from './TabPanel';
 import { Positions } from './Positions';
 import './Scene.css';
 import { techniques } from '../data/techniques';
+import { toast } from 'react-hot-toast';
 
 // Add new context for active limb
 const ActiveLimbContext = React.createContext<{
@@ -359,6 +360,49 @@ const DEFAULT_TECHNIQUES = [
   }
 ];
 
+// Add ScreenshotTool component at the top level
+function ScreenshotTool() {
+  const { gl, scene, camera } = useThree();
+
+  const captureScreenshot = useCallback(() => {
+    // Render the scene
+    gl.render(scene, camera);
+
+    // Get the canvas element
+    const canvas = gl.domElement;
+
+    try {
+      // Convert the canvas to a data URL
+      const dataUrl = canvas.toDataURL('image/png');
+      
+      // Create a timestamp for the filename
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const filename = `judo-scene-${timestamp}.png`;
+
+      // Create a temporary link element to trigger the download
+      const link = document.createElement('a');
+      link.href = dataUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      toast.success('Screenshot saved successfully!');
+    } catch (error) {
+      console.error('Error capturing screenshot:', error);
+      toast.error('Failed to capture screenshot');
+    }
+  }, [gl, scene, camera]);
+
+  // Expose the capture function to the window
+  useEffect(() => {
+    // @ts-ignore
+    window.__captureScreenshot = captureScreenshot;
+  }, [captureScreenshot]);
+
+  return null;
+}
+
 export function Scene({ children }: CustomSceneProps) {
   const [activeLimbId, setActiveLimbId] = useState<LimbId | null>(null);
   const [axisControls, setAxisControls] = useState<AxisControlData[]>([]);
@@ -572,6 +616,7 @@ export function Scene({ children }: CustomSceneProps) {
 
               <OrbitControls minDistance={2} maxDistance={8} target={[0, 1.5, 0]} enableDamping dampingFactor={0.05} />
               <CameraController />
+              <ScreenshotTool />
             </Suspense>
           </Canvas>
           <AxisControls />
@@ -606,6 +651,22 @@ export function Scene({ children }: CustomSceneProps) {
                   }}
                 >
                   Reset Camera
+                </button>
+              </div>
+              <div style={{ display: "flex", gap: "5px", justifyContent: "center" }}>
+                <button
+                  onClick={() => {
+                    // @ts-ignore
+                    window.__captureScreenshot?.();
+                  }}
+                  style={{
+                    width: "100%",
+                    backgroundColor: "#2196F3",
+                    color: "white",
+                    padding: "8px 16px",
+                  }}
+                >
+                  Take Screenshot
                 </button>
               </div>
             </div>

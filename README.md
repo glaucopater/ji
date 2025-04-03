@@ -36,12 +36,17 @@ yarn preview
 - Interactive technique cards with ON/OFF states
 - Smooth animation transitions
 - Error handling and recovery
+- Position management system with save/load functionality
+- Technique editor with visual flow-based programming
+- Export/import capabilities for positions and techniques
 
 ## Components
 
 ### Scene
 - 3D environment setup with proper lighting and camera controls
 - Manages the humanoid model and animation state
+- Position saving and loading system
+- Default position reset functionality
 
 ### Humanoid
 - Fully articulated 3D model with:
@@ -49,6 +54,8 @@ yarn preview
   - Articulated arms (upper/lower) with hands
   - Articulated legs (upper/lower) with feet
   - Yellow joint indicators for better visualization
+- Real-time position updates
+- Smooth transitions between positions
 
 ### Animation System
 - Keyframe-based animation system
@@ -57,15 +64,37 @@ yarn preview
   - Looping animations (like walking)
   - Toggle-based animations
   - Default stopped state
+  - Position-based animations
 
-### Technique Cards
-- Compact UI for technique selection
-- Shows technique details:
+### Technique Editor
+- Visual flow-based programming interface
+- Node-based movement creation
+- Real-time technique preview
+- Save and load technique configurations
+- Export/import technique definitions
+- Last updated timestamps for techniques
+- Technique categorization and filtering
+
+### Position Management
+- Save current model positions
+- Load saved positions
+- Export positions as JSON
+- Position cards with timestamps
+- Default position reset
+- Smooth transitions between positions
+
+### UI Components
+- Technique cards showing:
   - Name in English
   - Japanese name
   - Category
   - Difficulty level
-- Toggle state indicator for continuous animations
+  - Last updated timestamp
+- Position cards with:
+  - Position name
+  - Timestamp
+  - Preview indicator
+- Export/import buttons for data management
 
 ## Usage
 
@@ -77,6 +106,8 @@ yarn preview
 - Click technique cards to execute techniques
 - Toggle walking animation ON/OFF
 - Use OrbitControls to rotate and zoom the view
+- Click position cards to load saved positions
+- Click export button to save positions/techniques
 
 ## Technical Implementation
 
