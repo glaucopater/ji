@@ -17,6 +17,8 @@ import { MovementNode } from './MovementNode';
 import { MovementNodeEditor } from './MovementNodeEditor';
 import { CreateTechniqueModal } from './CreateTechniqueModal';
 import { FlowNode, TechniqueFlow, MovementData } from '../../types/flow';
+import { TabPanel } from '../TabPanel';
+import { Position } from '../../types/positions';
 
 const nodeTypes = {
   movement: MovementNode,
@@ -192,6 +194,11 @@ export function TechniqueEditor() {
     linkElement.click();
   }, [currentTechnique, nodes, edges]);
 
+  const handlePositionSelect = (position: Position) => {
+    // This will be handled by the parent component
+    console.log('Position selected:', position);
+  };
+
   return (
     <div className="technique-editor">
       <Toaster position="top-right" />
@@ -199,33 +206,58 @@ export function TechniqueEditor() {
         <button onClick={() => setIsCreateModalOpen(true)} className="create-button">
           Create New Technique
         </button>
+        <button onClick={exportTechnique} style={{ backgroundColor: "#2196F3", color: "white" }}>
+          Export Techniques
+        </button>
         {currentTechnique && (
           <>
             <button onClick={addMovementNode}>Add Movement</button>
             <button onClick={() => saveTechnique(currentTechnique)}>Save Changes</button>
-            <button onClick={exportTechnique}>Export Technique</button>
           </>
         )}
       </div>
 
       <div className="editor-container">
-        <div className="saved-techniques">
-          <h3>Saved Techniques</h3>
-          {savedTechniques.map((technique) => (
-            <div 
-              key={technique.id} 
-              className={`saved-technique-item ${currentTechnique?.id === technique.id ? 'active' : ''}`}
-            >
-              <div onClick={() => loadTechnique(technique)}>
-                <h4>{technique.name}</h4>
-                <p>{technique.description}</p>
-              </div>
-              <button onClick={(e) => {
-                e.stopPropagation();
-                deleteTechnique(technique.id);
-              }}>Delete</button>
+        <div className="editor-sidebar">
+          <TabPanel onPositionSelect={handlePositionSelect}>
+            <div className="saved-techniques">
+              <h3>Saved Techniques</h3>
+              {savedTechniques.map((technique) => (
+                <div 
+                  key={technique.id} 
+                  className={`saved-technique-item ${currentTechnique?.id === technique.id ? 'active' : ''}`}
+                  onClick={() => loadTechnique(technique)}
+                >
+                  <div>
+                    <h4>{technique.name}</h4>
+                    <p>{technique.description}</p>
+                    <small style={{ color: '#666', fontSize: '0.8em' }}>
+                      Last updated: {new Date(technique.updatedAt).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </small>
+                  </div>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      deleteTechnique(technique.id);
+                    }}
+                    style={{ marginLeft: 'auto' }}
+                  >
+                    Delete
+                  </button>
+                </div>
+              ))}
             </div>
-          ))}
+            <div className="positions-tab">
+              <h3>Positions</h3>
+              <p>Select a position to use as reference</p>
+            </div>
+          </TabPanel>
         </div>
 
         <div className="flow-container">

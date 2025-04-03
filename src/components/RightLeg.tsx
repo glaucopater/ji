@@ -2,15 +2,15 @@ import { Group } from "three";
 import { Joint } from "./Joint";
 import { InteractiveLimb } from "./Scene";
 
+interface RightLegProps {
+  upperLegRightRef: React.RefObject<Group>;
+  lowerLegRightRef: React.RefObject<Group>;
+}
+
 export const RightLeg = ({
   upperLegRightRef,
-  kneeRightRef,
   lowerLegRightRef,
-}: {
-  upperLegRightRef: React.RefObject<Group>;
-  kneeRightRef: React.RefObject<Group>;
-  lowerLegRightRef: React.RefObject<Group>;
-}) => {
+}: RightLegProps) => {
   return (
     <group position={[0.2, 0.7, 0]}>
       {/* Hip Joint */}
@@ -25,7 +25,7 @@ export const RightLeg = ({
           limbId='upperLegRight'
         />
         {/* Knee Joint */}
-        <group ref={kneeRightRef} position={[0, -0.5, 0]}>
+        <group position={[0, -0.5, 0]}>
           <Joint position={[0, 0, 0]} />
           {/* Lower Leg */}
           <group ref={lowerLegRightRef}>

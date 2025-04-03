@@ -1,0 +1,233 @@
+.right-controls {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.camera-controls {
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.camera-controls button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  background: white;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.camera-controls button:hover {
+  background: #f0f0f0;
+}
+
+.model-controls {
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px;
+  border-radius: 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.model-controls button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.techniques-grid {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 300px;
+  max-height: 80vh;
+  background: white;
+  border-radius: 10px;
+  padding: 10px;
+  overflow-y: auto;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tab-panel {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.tab-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+  background: #f5f5f5;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.tab-button {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  background: white;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.tab-button:hover {
+  background: #f0f0f0;
+}
+
+.tab-button.active {
+  background: #4CAF50;
+  color: white;
+}
+
+.tab-content {
+  flex: 1;
+  overflow-y: auto;
+}
+
+.saved-techniques {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.saved-techniques h3 {
+  color: #333;
+  margin: 0 0 10px 0;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #eee;
+}
+
+.technique-card {
+  background: #f5f5f5;
+  padding: 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid #eee;
+}
+
+.technique-card:hover {
+  background: #f0f0f0;
+  border-color: #ddd;
+}
+
+.technique-card h4 {
+  color: #333;
+  margin: 0 0 5px 0;
+}
+
+.technique-card .japanese-name {
+  color: #666;
+  margin: 0 0 5px 0;
+  font-size: 14px;
+}
+
+.technique-card .description {
+  color: #666;
+  margin: 0 0 10px 0;
+  font-size: 14px;
+}
+
+.technique-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.technique-tag {
+  background: #e0e0e0;
+  color: #333;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+}
+
+.positions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.position-card {
+  background: #f5f5f5;
+  padding: 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid #eee;
+}
+
+.position-card:hover {
+  background: #f0f0f0;
+  border-color: #ddd;
+}
+
+.position-card h4 {
+  color: #333;
+  margin: 0 0 5px 0;
+}
+
+.position-card .timestamp {
+  color: #666;
+  font-size: 12px;
+  margin-top: 5px;
+}
+
+.positions-tab {
+  padding: 10px;
+}
+
+.positions-tab h3 {
+  color: #333;
+  margin: 0 0 10px 0;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #eee;
+}
+
+.positions-tab .position-card {
+  background: #f5f5f5;
+  padding: 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 10px;
+  border: 1px solid #eee;
+}
+
+.positions-tab .position-card:hover {
+  background: #f0f0f0;
+  border-color: #ddd;
+}
+
+.positions-tab .position-card h4 {
+  color: #333;
+  margin: 0 0 5px 0;
+}
+
+.positions-tab .position-card p {
+  color: #666;
+  margin: 0;
+  font-size: 14px;
+}
+
+.positions-tab .position-card .timestamp {
+  color: #666;
+  font-size: 12px;
+  margin-top: 5px;
+} 

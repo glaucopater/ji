@@ -146,8 +146,6 @@ export const techniques: JudoTechnique[] = [
           // Starting position - standing
           upperLegLeft: { x: 0 },
           upperLegRight: { x: 0 },
-          kneeLeft: { x: 0 },
-          kneeRight: { x: 0 },
           lowerLegLeft: { x: 0 },
           lowerLegRight: { x: 0 },
           upperArmLeft: { x: 0 },
@@ -162,9 +160,6 @@ export const techniques: JudoTechnique[] = [
           // Hip flexion (bending at hips)
           upperLegLeft: { x: rad(90) }, // Deep hip flexion
           upperLegRight: { x: rad(90) },
-          // Knee flexion (bending knees)
-          kneeLeft: { x: rad(120) }, // Deeper knee flexion
-          kneeRight: { x: rad(120) },
           // Ankle dorsiflexion (keeping feet flat on ground)
           lowerLegLeft: { x: rad(60) }, // Increased ankle dorsiflexion
           lowerLegRight: { x: rad(60) },

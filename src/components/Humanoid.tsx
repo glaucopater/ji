@@ -9,24 +9,32 @@ import { RightArm } from "./RightArm";
 import { LeftLeg } from "./LeftLeg";
 import { RightLeg } from "./RightLeg";
 
+interface HumanoidProps {
+  selectedTechnique?: JudoTechnique;
+  onAnimationComplete?: () => void;
+  upperArmLeftRef: React.RefObject<THREE.Group>;
+  lowerArmLeftRef: React.RefObject<THREE.Group>;
+  upperArmRightRef: React.RefObject<THREE.Group>;
+  lowerArmRightRef: React.RefObject<THREE.Group>;
+  upperLegLeftRef: React.RefObject<THREE.Group>;
+  lowerLegLeftRef: React.RefObject<THREE.Group>;
+  upperLegRightRef: React.RefObject<THREE.Group>;
+  lowerLegRightRef: React.RefObject<THREE.Group>;
+}
+
 export function Humanoid({
   selectedTechnique,
   onAnimationComplete,
-}: {
-  selectedTechnique?: JudoTechnique;
-  onAnimationComplete?: () => void;
-}) {
+  upperArmLeftRef,
+  lowerArmLeftRef,
+  upperArmRightRef,
+  lowerArmRightRef,
+  upperLegLeftRef,
+  lowerLegLeftRef,
+  upperLegRightRef,
+  lowerLegRightRef,
+}: HumanoidProps) {
   // Refs for animation
-  const upperArmLeftRef = useRef<THREE.Group>(null);
-  const lowerArmLeftRef = useRef<THREE.Group>(null);
-  const upperArmRightRef = useRef<THREE.Group>(null);
-  const lowerArmRightRef = useRef<THREE.Group>(null);
-  const upperLegLeftRef = useRef<THREE.Group>(null);
-  const kneeLeftRef = useRef<THREE.Group>(null);
-  const lowerLegLeftRef = useRef<THREE.Group>(null);
-  const upperLegRightRef = useRef<THREE.Group>(null);
-  const kneeRightRef = useRef<THREE.Group>(null);
-  const lowerLegRightRef = useRef<THREE.Group>(null);
   const spineRef = useRef<THREE.Group>(null);
 
   // Use animation hook
@@ -36,10 +44,8 @@ export function Humanoid({
     upperArmRightRef,
     lowerArmRightRef,
     upperLegLeftRef,
-    kneeLeftRef,
     lowerLegLeftRef,
     upperLegRightRef,
-    kneeRightRef,
     lowerLegRightRef,
     spineRef,
   });
@@ -56,8 +62,6 @@ export function Humanoid({
           {
             upperLegLeft: { x: 0 },
             upperLegRight: { x: 0 },
-            kneeLeft: { x: 0 },
-            kneeRight: { x: 0 },
             lowerLegLeft: { x: 0 },
             lowerLegRight: { x: 0 },
             upperArmLeft: { x: 0 },
@@ -147,10 +151,10 @@ export function Humanoid({
           <RightArm upperArmRightRef={upperArmRightRef} lowerArmRightRef={lowerArmRightRef} />
 
           {/* Left Leg */}
-          <LeftLeg upperLegLeftRef={upperLegLeftRef} kneeLeftRef={kneeLeftRef} lowerLegLeftRef={lowerLegLeftRef} />
+          <LeftLeg upperLegLeftRef={upperLegLeftRef} lowerLegLeftRef={lowerLegLeftRef} />
 
           {/* Right Leg */}
-          <RightLeg upperLegRightRef={upperLegRightRef} kneeRightRef={kneeRightRef} lowerLegRightRef={lowerLegRightRef} />
+          <RightLeg upperLegRightRef={upperLegRightRef} lowerLegRightRef={lowerLegRightRef} />
         </group>
       </group>
     </group>
