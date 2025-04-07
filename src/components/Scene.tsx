@@ -284,8 +284,8 @@ function ModelPositionController({
   const handleMove = React.useCallback((_axis: "y", amount: number) => {
     setModelPosition((prev: ModelPosition) => {
       const newY = prev.y + amount;
-      // Allow model to get closer to the mat (0.1 units minimum)
-      const position = { y: Math.max(0.1, newY) };
+      // Allow model to move all the way down to the tatami (Y=0)
+      const position = { y: Math.max(0, newY) };
       // Save position to localStorage
       localStorage.setItem("humanoidPosition", JSON.stringify(position));
       return position;
@@ -387,6 +387,7 @@ export function Scene({ children }: CustomSceneProps) {
   const lowerLegRightRef = useRef<THREE.Group>(null);
   const upperTorsoRef = useRef<THREE.Group>(null);
   const lowerTorsoRef = useRef<THREE.Group>(null);
+  const headRef = useRef<THREE.Group>(null);
 
   // Store all refs in the limbsRef object
   const limbsRef = useRef<{ [key in LimbId]?: React.RefObject<THREE.Group> }>({
@@ -400,6 +401,7 @@ export function Scene({ children }: CustomSceneProps) {
     lowerLegRight: lowerLegRightRef,
     upperTorso: upperTorsoRef,
     lowerTorso: lowerTorsoRef,
+    head: headRef,
   });
 
   const [, setSavedTechniques] = useState<any[]>([]);
@@ -582,6 +584,7 @@ export function Scene({ children }: CustomSceneProps) {
                   lowerLegRightRef={lowerLegRightRef}
                   upperTorsoRef={upperTorsoRef}
                   lowerTorsoRef={lowerTorsoRef}
+                  headRef={headRef}
                   selectedTechnique={currentTechnique}
                 />
               </ModelPositionController>

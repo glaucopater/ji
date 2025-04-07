@@ -105,6 +105,13 @@ export const LIMB_CONSTRAINTS: Record<LimbId, LimbConstraints> = {
       z: [-Math.PI / 4, Math.PI / 4],
     },
   },
+  head: {
+    rotation: {
+      x: [-Math.PI / 4, Math.PI / 4], // Limited up/down movement
+      y: [-Math.PI / 2, Math.PI / 2], // Full left/right rotation
+      z: [-Math.PI / 4, Math.PI / 4], // Limited tilt
+    },
+  },
 };
 
 // Update default positions with proper typing
@@ -149,6 +156,10 @@ export const DEFAULT_POSITIONS: Record<LimbId, LimbState> = {
     position: new THREE.Vector3(0, 0.4, 0),
     rotation: new THREE.Euler(0, 0, 0),
   },
+  head: {
+    position: new THREE.Vector3(0, 1.8, 0),
+    rotation: new THREE.Euler(0, 0, 0),
+  },
 };
 
 export interface CustomSceneProps {
@@ -179,7 +190,8 @@ export type LimbId =
   | "upperLegRight"
   | "lowerLegRight"
   | "upperTorso"
-  | "lowerTorso";
+  | "lowerTorso"
+  | "head";
 
 // Add type for constraints
 export interface LimbConstraints {

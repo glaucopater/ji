@@ -8,7 +8,7 @@ import { LeftArm } from "./LeftArm";
 import { RightArm } from "./RightArm";
 import { LeftLeg } from "./LeftLeg";
 import { RightLeg } from "./RightLeg";
-
+import { Head } from "./Head";
 interface HumanoidProps {
   selectedTechnique?: JudoTechnique;
   onAnimationComplete?: () => void;
@@ -22,6 +22,7 @@ interface HumanoidProps {
   lowerLegRightRef: React.RefObject<THREE.Group>;
   upperTorsoRef: React.RefObject<THREE.Group>;
   lowerTorsoRef: React.RefObject<THREE.Group>;
+  headRef: React.RefObject<THREE.Group>;
 }
 
 export function Humanoid({
@@ -37,6 +38,7 @@ export function Humanoid({
   lowerLegRightRef,
   upperTorsoRef,
   lowerTorsoRef,
+  headRef,
 }: HumanoidProps) {
   // Use animation hook
   const { playTechnique, setIdle } = useHumanoidAnimation({
@@ -135,19 +137,7 @@ export function Humanoid({
           upperChildren={
             <>
               {/* Head and arms are children of upper torso */}
-              <mesh position={[0, 2, 0]} scale={[0.6, 1, 0.7]} castShadow>
-                <sphereGeometry args={[0.3, 32, 32]} />
-                <meshStandardMaterial color='lightblue' />
-                {/* Eyes to show front direction */}
-                <mesh position={[0.15, 0, 0.25]} scale={0.1}>
-                  <sphereGeometry args={[1, 16, 16]} />
-                  <meshStandardMaterial color='black' />
-                </mesh>
-                <mesh position={[-0.15, 0, 0.25]} scale={0.1}>
-                  <sphereGeometry args={[1, 16, 16]} />
-                  <meshStandardMaterial color='black' />
-                </mesh>
-              </mesh>
+              <Head headRef={headRef} />
               <LeftArm upperArmLeftRef={upperArmLeftRef} lowerArmLeftRef={lowerArmLeftRef} />
               <RightArm upperArmRightRef={upperArmRightRef} lowerArmRightRef={lowerArmRightRef} />
             </>
