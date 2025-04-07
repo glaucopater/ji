@@ -114,48 +114,73 @@
 }
 
 .technique-card {
-  background: #f5f5f5;
+  background: white;
   padding: 15px;
   border-radius: 8px;
+  margin-bottom: 15px;
   cursor: pointer;
-  transition: all 0.2s;
-  border: 1px solid #eee;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
 }
 
 .technique-card:hover {
-  background: #f0f0f0;
-  border-color: #ddd;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.technique-card.active {
+  border-color: #4CAF50;
+  background-color: #f8fff8;
 }
 
 .technique-card h4 {
+  margin: 0 0 8px 0;
   color: #333;
-  margin: 0 0 5px 0;
 }
 
 .technique-card .japanese-name {
+  font-size: 0.9em;
   color: #666;
-  margin: 0 0 5px 0;
-  font-size: 14px;
+  margin: 0 0 8px 0;
 }
 
 .technique-card .description {
-  color: #666;
-  margin: 0 0 10px 0;
-  font-size: 14px;
+  font-size: 0.9em;
+  color: #444;
+  margin: 0 0 12px 0;
 }
 
 .technique-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 5px;
+  margin-bottom: 8px;
 }
 
 .technique-tag {
   background: #e0e0e0;
-  color: #333;
   padding: 2px 8px;
   border-radius: 12px;
-  font-size: 12px;
+  font-size: 0.8em;
+  color: #555;
+}
+
+.technique-status {
+  font-size: 0.8em;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: inline-block;
+  margin-top: 8px;
+}
+
+.technique-card.active .technique-status {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.technique-card:not(.active) .technique-status {
+  background-color: #e0e0e0;
+  color: #666;
 }
 
 .positions {

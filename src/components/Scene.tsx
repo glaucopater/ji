@@ -24,7 +24,7 @@ import { usePositions } from '../hooks/usePositions';
 import { TabPanel } from './TabPanel';
 import { Positions } from './Positions';
 import './Scene.css';
-import { techniques } from '../data/techniques';
+import { DEFAULT_TECHNIQUES, techniques } from '../data/techniques';
 import { toast } from 'react-hot-toast';
 
 // Add new context for active limb
@@ -325,40 +325,7 @@ function ModelPositionController({
   );
 }
 
-const DEFAULT_TECHNIQUES = [
-  {
-    id: 'walking',
-    name: 'Walking',
-    nameJa: '歩く',
-    description: 'Basic walking motion',
-    tags: ['Movement', 'Basic'],
-    isActive: false,
-  },
-  {
-    id: 'ippon-seoi-nage',
-    name: 'Ippon Seoi Nage',
-    nameJa: '一本背負投',
-    description: 'One-shoulder throw',
-    tags: ['Throwing Technique', 'Intermediate'],
-    isActive: false,
-  },
-  {
-    id: 'o-soto-gari',
-    name: 'O Soto Gari',
-    nameJa: '大外刈',
-    description: 'Major outer reap',
-    tags: ['Throwing Technique', 'Advanced'],
-    isActive: false,
-  },
-  {
-    id: 'deep-crouch',
-    name: 'Deep Crouch',
-    nameJa: 'Shizentai',
-    description: 'Deep crouching stance with proper biomechanical alignment',
-    tags: ['Stance', 'Intermediate'],
-    isActive: false,
-  }
-];
+
 
 // Add ScreenshotTool component at the top level
 function ScreenshotTool() {
@@ -407,6 +374,7 @@ export function Scene({ children }: CustomSceneProps) {
   const [activeLimbId, setActiveLimbId] = useState<LimbId | null>(null);
   const [axisControls, setAxisControls] = useState<AxisControlData[]>([]);
   const [currentTechnique, setCurrentTechnique] = useState<JudoTechnique | undefined>(undefined);
+  const [activeTechniqueId, setActiveTechniqueId] = useState<string | null>(null);
 
   // Create refs for all limbs
   const upperArmLeftRef = useRef<THREE.Group>(null);
@@ -417,6 +385,8 @@ export function Scene({ children }: CustomSceneProps) {
   const lowerLegLeftRef = useRef<THREE.Group>(null);
   const upperLegRightRef = useRef<THREE.Group>(null);
   const lowerLegRightRef = useRef<THREE.Group>(null);
+  const upperTorsoRef = useRef<THREE.Group>(null);
+  const lowerTorsoRef = useRef<THREE.Group>(null);
 
   // Store all refs in the limbsRef object
   const limbsRef = useRef<{ [key in LimbId]?: React.RefObject<THREE.Group> }>({
@@ -428,6 +398,8 @@ export function Scene({ children }: CustomSceneProps) {
     lowerLegLeft: lowerLegLeftRef,
     upperLegRight: upperLegRightRef,
     lowerLegRight: lowerLegRightRef,
+    upperTorso: upperTorsoRef,
+    lowerTorso: lowerTorsoRef,
   });
 
   const [, setSavedTechniques] = useState<any[]>([]);
@@ -608,6 +580,8 @@ export function Scene({ children }: CustomSceneProps) {
                   lowerLegLeftRef={lowerLegLeftRef}
                   upperLegRightRef={upperLegRightRef}
                   lowerLegRightRef={lowerLegRightRef}
+                  upperTorsoRef={upperTorsoRef}
+                  lowerTorsoRef={lowerTorsoRef}
                   selectedTechnique={currentTechnique}
                 />
               </ModelPositionController>
@@ -794,13 +768,22 @@ export function Scene({ children }: CustomSceneProps) {
                 {DEFAULT_TECHNIQUES.map((technique) => (
                   <div 
                     key={technique.id} 
-                    className="technique-card"
+                    className={`technique-card ${activeTechniqueId === technique.id ? 'active' : ''}`}
                     onClick={() => {
                       console.log('Selected technique:', technique.id);
                       const techObj = techniques.find(t => t.id === technique.id);
                       if (techObj) {
-                        setCurrentTechnique(techObj);
+                        if (activeTechniqueId === technique.id) {
+                          // If clicking the active technique, deactivate it
+                          setActiveTechniqueId(null);
+                          setCurrentTechnique(undefined);
+                        } else {
+                          // If clicking a different technique, activate it
+                          setActiveTechniqueId(technique.id);
+                          setCurrentTechnique(techObj);
+                        }
                       } else {
+                        setActiveTechniqueId(null);
                         setCurrentTechnique(undefined);
                       }
                     }}
@@ -812,6 +795,9 @@ export function Scene({ children }: CustomSceneProps) {
                       {technique.tags.map((tag, index) => (
                         <span key={index} className="technique-tag">{tag}</span>
                       ))}
+                    </div>
+                    <div className="technique-status">
+                      {activeTechniqueId === technique.id ? 'Active' : 'Inactive'}
                     </div>
                   </div>
                 ))}

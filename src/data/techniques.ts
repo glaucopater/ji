@@ -3,6 +3,42 @@ import { JudoTechnique } from '../types/techniques';
 // Convert degrees to radians for easier angle specification
 const rad = (deg: number) => (deg * Math.PI) / 180;
 
+
+export const DEFAULT_TECHNIQUES = [
+  {
+    id: 'walking',
+    name: 'Walking',
+    nameJa: '歩く',
+    description: 'Basic walking motion',
+    tags: ['Movement', 'Basic'],
+    isActive: false,
+  },
+  {
+    id: 'ippon-seoi-nage',
+    name: 'Ippon Seoi Nage',
+    nameJa: '一本背負投',
+    description: 'One-shoulder throw',
+    tags: ['Throwing Technique', 'Intermediate'],
+    isActive: false,
+  },
+  {
+    id: 'o-soto-gari',
+    name: 'O Soto Gari',
+    nameJa: '大外刈',
+    description: 'Major outer reap',
+    tags: ['Throwing Technique', 'Advanced'],
+    isActive: false,
+  },
+  {
+    id: 'deep-crouch',
+    name: 'Deep Crouch',
+    nameJa: 'Shizentai',
+    description: 'Deep crouching stance with proper biomechanical alignment',
+    tags: ['Stance', 'Intermediate'],
+    isActive: false,
+  }
+];
+
 export const techniques: JudoTechnique[] = [
   {
     id: 'ippon-seoi-nage',
@@ -152,7 +188,8 @@ export const techniques: JudoTechnique[] = [
           upperArmRight: { x: 0 },
           lowerArmLeft: { x: 0 },
           lowerArmRight: { x: 0 },
-          spine: { x: 0 },
+          upperTorso: { x: 0 },
+          lowerTorso: { x: 0 },
           duration: 0.5
         },
         {
@@ -169,7 +206,8 @@ export const techniques: JudoTechnique[] = [
           lowerArmLeft: { x: rad(45) }, // Elbows bent
           lowerArmRight: { x: rad(45) },
           // Torso bends forward significantly
-          spine: { x: rad(90) }, // Bend forward 90 degrees to get head near floor
+          upperTorso: { x: rad(90) }, // Bend forward 90 degrees to get head near floor
+          lowerTorso: { x: rad(90) },
           duration: 1.0
         }
       ],

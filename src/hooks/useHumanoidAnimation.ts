@@ -23,7 +23,8 @@ const jointToRefMap = {
   lowerLegLeft: 'lowerLegLeftRef',
   upperLegRight: 'upperLegRightRef',
   lowerLegRight: 'lowerLegRightRef',
-  spine: 'spineRef'
+  upperTorso: 'upperTorsoRef',
+  lowerTorso: 'lowerTorsoRef'
 } as const;
 
 export function useHumanoidAnimation(refs: JointRefs) {

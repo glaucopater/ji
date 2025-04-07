@@ -10,10 +10,11 @@ export interface JointRefs {
   lowerLegLeftRef: RefObject<Group>;
   upperLegRightRef: RefObject<Group>;
   lowerLegRightRef: RefObject<Group>;
-  spineRef: RefObject<Group>;
+  upperTorsoRef: RefObject<Group>;
+  lowerTorsoRef: RefObject<Group>;
 }
 
-export type TechniqueKeyframe = {
+export interface TechniqueKeyframe {
   upperArmLeft?: { x?: number; y?: number; z?: number };
   lowerArmLeft?: { x?: number; y?: number; z?: number };
   upperArmRight?: { x?: number; y?: number; z?: number };
@@ -22,9 +23,10 @@ export type TechniqueKeyframe = {
   lowerLegLeft?: { x?: number; y?: number; z?: number };
   upperLegRight?: { x?: number; y?: number; z?: number };
   lowerLegRight?: { x?: number; y?: number; z?: number };
-  spine?: { x?: number; y?: number; z?: number };
-  duration: number; // Duration in seconds
-};
+  upperTorso?: { x?: number; y?: number; z?: number };
+  lowerTorso?: { x?: number; y?: number; z?: number };
+  duration: number;
+}
 
 export type TechniqueAnimation = {
   keyframes: TechniqueKeyframe[];

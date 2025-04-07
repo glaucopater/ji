@@ -1,4 +1,3 @@
-
 interface TatamiProps {
   size?: number; // Size of the tatami in meters
   tilesPerSide?: number; // Number of tiles per side
@@ -8,10 +7,14 @@ export function Tatami({ size = 10, tilesPerSide = 10 }: TatamiProps) {
   const tileSize = size / tilesPerSide;
   const tiles = [];
 
-  // Create alternating red and green tiles
+  // Create tiles with double green perimeter and red interior
   for (let x = 0; x < tilesPerSide; x++) {
     for (let z = 0; z < tilesPerSide; z++) {
-      const isRed = (x + z) % 2 === 0;
+      // Check if the tile is on the outer perimeter or the inner perimeter
+      const isOuterPerimeter = x === 0 || x === tilesPerSide - 1 || z === 0 || z === tilesPerSide - 1;
+      const isInnerPerimeter = x === 1 || x === tilesPerSide - 2 || z === 1 || z === tilesPerSide - 2;
+      const isPerimeter = isOuterPerimeter || isInnerPerimeter;
+      
       const position = [
         (x - tilesPerSide / 2) * tileSize + tileSize / 2,
         0,
@@ -26,7 +29,7 @@ export function Tatami({ size = 10, tilesPerSide = 10 }: TatamiProps) {
         >
           <planeGeometry args={[tileSize * 0.95, tileSize * 0.95]} />
           <meshStandardMaterial 
-            color={isRed ? '#8B0000' : '#006400'} 
+            color={isPerimeter ? '#006400' : '#8B0000'} 
             roughness={0.8}
             metalness={0.2}
           />
