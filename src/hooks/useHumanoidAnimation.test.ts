@@ -1,7 +1,6 @@
 import '@testing-library/jest-dom';
 import { renderHook, act } from '@testing-library/react';
 import { useHumanoidAnimation } from './useHumanoidAnimation';
-import * as THREE from 'three';
 import { JointRefs, TechniqueAnimation } from '../types/techniques';
 
 // Mock useFrame since we can't use it in tests
@@ -18,14 +17,18 @@ describe('useHumanoidAnimation', () => {
   beforeEach(() => {
     // Create mock refs with rotation objects
     mockRefs = {
-      upperArmLeftRef: { current: new THREE.Group() },
-      lowerArmLeftRef: { current: new THREE.Group() },
-      upperArmRightRef: { current: new THREE.Group() },
-      lowerArmRightRef: { current: new THREE.Group() },
-      upperLegLeftRef: { current: new THREE.Group() },
-      lowerLegLeftRef: { current: new THREE.Group() },
-      upperLegRightRef: { current: new THREE.Group() },
-      lowerLegRightRef: { current: new THREE.Group() }
+      upperArmLeftRef: { current: { rotation: { x: 0, y: 0, z: 0 } } },
+      lowerArmLeftRef: { current: { rotation: { x: 0, y: 0, z: 0 } } },
+      upperArmRightRef: { current: { rotation: { x: 0, y: 0, z: 0 } } },
+      lowerArmRightRef: { current: { rotation: { x: 0, y: 0, z: 0 } } },
+      upperLegLeftRef: { current: { rotation: { x: 0, y: 0, z: 0 } } },
+      lowerLegLeftRef: { current: { rotation: { x: 0, y: 0, z: 0 } } },
+      upperLegRightRef: { current: { rotation: { x: 0, y: 0, z: 0 } } },
+      lowerLegRightRef: { current: { rotation: { x: 0, y: 0, z: 0 } } },
+      upperTorsoRef: { current: { rotation: { x: 0, y: 0, z: 0 } } },
+      lowerTorsoRef: { current: { rotation: { x: 0, y: 0, z: 0 } } },
+      handLeftRef: { current: { rotation: { x: 0, y: 0, z: 0 } } },
+      handRightRef: { current: { rotation: { x: 0, y: 0, z: 0 } } }
     } as unknown as JointRefs;
 
     // Create mock technique

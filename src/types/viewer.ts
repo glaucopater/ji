@@ -9,6 +9,7 @@ export interface StoredLimbPositions {
       y: number;
       z: number;
     };
+    height: number;
   };
 }
 
@@ -18,6 +19,7 @@ export interface InteractiveLimbProps {
   position: [number, number, number];
   groupRef: React.RefObject<THREE.Group | null>;
   limbId: LimbId;
+  geometryType?: 'cylinder' | 'box';
 }
 
 // Add type for rotation axes
@@ -35,26 +37,153 @@ export interface AxisControlData {
 
 // Update constraints with proper typing
 export const LIMB_CONSTRAINTS: Record<LimbId, LimbConstraints> = {
-  upperArmLeft: { rotation: { x: [-Math.PI / 2, Math.PI / 2], y: [-Math.PI / 4, Math.PI / 4], z: [-Math.PI / 2, Math.PI / 2] } },
-  upperArmRight: { rotation: { x: [-Math.PI / 2, Math.PI / 2], y: [-Math.PI / 4, Math.PI / 4], z: [-Math.PI / 2, Math.PI / 2] } },
-  lowerArmLeft: { rotation: { x: [-Math.PI / 2, 0], y: [-Math.PI / 4, Math.PI / 4], z: [-Math.PI / 4, Math.PI / 4] } },
-  lowerArmRight: { rotation: { x: [-Math.PI / 2, 0], y: [-Math.PI / 4, Math.PI / 4], z: [-Math.PI / 4, Math.PI / 4] } },
-  upperLegLeft: { rotation: { x: [-Math.PI / 2, Math.PI / 2], y: [-Math.PI / 4, Math.PI / 4], z: [-Math.PI / 4, Math.PI / 4] } },
-  upperLegRight: { rotation: { x: [-Math.PI / 2, Math.PI / 2], y: [-Math.PI / 4, Math.PI / 4], z: [-Math.PI / 4, Math.PI / 4] } },
-  lowerLegLeft: { rotation: { x: [0, Math.PI / 2], y: [-Math.PI / 8, Math.PI / 8], z: [-Math.PI / 8, Math.PI / 8] } },
-  lowerLegRight: { rotation: { x: [0, Math.PI / 2], y: [-Math.PI / 8, Math.PI / 8], z: [-Math.PI / 8, Math.PI / 8] } },
+  upperArmLeft: {
+    rotation: {
+      x: [-Math.PI / 2, Math.PI / 2],
+      y: [-Math.PI / 2, Math.PI / 2],
+      z: [-Math.PI / 2, Math.PI / 2],
+    },
+  },
+  lowerArmLeft: {
+    rotation: {
+      x: [-Math.PI / 2, 0],
+      y: [-Math.PI / 4, Math.PI / 4],
+      z: [-Math.PI / 4, Math.PI / 4],
+    },
+  },
+  upperArmRight: {
+    rotation: {
+      x: [-Math.PI / 2, Math.PI / 2],
+      y: [-Math.PI / 2, Math.PI / 2],
+      z: [-Math.PI / 2, Math.PI / 2],
+    },
+  },
+  lowerArmRight: {
+    rotation: {
+      x: [-Math.PI / 2, 0],
+      y: [-Math.PI / 4, Math.PI / 4],
+      z: [-Math.PI / 4, Math.PI / 4],
+    },
+  },
+  upperLegLeft: {
+    rotation: {
+      x: [-Math.PI / 2, Math.PI / 2],
+      y: [-Math.PI / 4, Math.PI / 4],
+      z: [-Math.PI / 4, Math.PI / 4],
+    },
+  },
+  lowerLegLeft: {
+    rotation: {
+      x: [0, Math.PI / 2],
+      y: [-Math.PI / 4, Math.PI / 4],
+      z: [-Math.PI / 4, Math.PI / 4],
+    },
+  },
+  upperLegRight: {
+    rotation: {
+      x: [-Math.PI / 2, Math.PI / 2],
+      y: [-Math.PI / 4, Math.PI / 4],
+      z: [-Math.PI / 4, Math.PI / 4],
+    },
+  },
+  lowerLegRight: {
+    rotation: {
+      x: [0, Math.PI / 2],
+      y: [-Math.PI / 4, Math.PI / 4],
+      z: [-Math.PI / 4, Math.PI / 4],
+    },
+  },
+  upperTorso: {
+    rotation: {
+      x: [-Math.PI / 4, Math.PI / 4],
+      y: [-Math.PI / 4, Math.PI / 4],
+      z: [-Math.PI / 4, Math.PI / 4],
+    },
+  },
+  lowerTorso: {
+    rotation: {
+      x: [-Math.PI / 4, Math.PI / 4],
+      y: [-Math.PI / 4, Math.PI / 4],
+      z: [-Math.PI / 4, Math.PI / 4],
+    },
+  },
+  head: {
+    rotation: {
+      x: [-Math.PI / 4, Math.PI / 4],
+      y: [-Math.PI / 2, Math.PI / 2],
+      z: [-Math.PI / 4, Math.PI / 4],
+    },
+  },
+  handLeft: {
+    rotation: {
+      x: [-Math.PI / 4, Math.PI / 4],
+      y: [0, 0],
+      z: [0, 0],
+    },
+  },
+  handRight: {
+    rotation: {
+      x: [-Math.PI / 4, Math.PI / 4],
+      y: [0, 0],
+      z: [0, 0],
+    },
+  },
 };
 
 // Update default positions with proper typing
 export const DEFAULT_POSITIONS: Record<LimbId, LimbState> = {
-  upperArmLeft: { position: new THREE.Vector3(0, -0.2, 0), rotation: new THREE.Euler(0, 0, 0) },
-  upperArmRight: { position: new THREE.Vector3(0, -0.2, 0), rotation: new THREE.Euler(0, 0, 0) },
-  lowerArmLeft: { position: new THREE.Vector3(0, -0.2, 0), rotation: new THREE.Euler(0, 0, 0) },
-  lowerArmRight: { position: new THREE.Vector3(0, -0.2, 0), rotation: new THREE.Euler(0, 0, 0) },
-  upperLegLeft: { position: new THREE.Vector3(0, -0.25, 0), rotation: new THREE.Euler(0, 0, 0) },
-  upperLegRight: { position: new THREE.Vector3(0, -0.25, 0), rotation: new THREE.Euler(0, 0, 0) },
-  lowerLegLeft: { position: new THREE.Vector3(0, -0.25, 0), rotation: new THREE.Euler(0, 0, 0) },
-  lowerLegRight: { position: new THREE.Vector3(0, -0.25, 0), rotation: new THREE.Euler(0, 0, 0) },
+  upperArmLeft: {
+    position: new THREE.Vector3(-0.4, 1.2, 0),
+    rotation: new THREE.Euler(0, 0, 0),
+  },
+  lowerArmLeft: {
+    position: new THREE.Vector3(-0.4, 0.8, 0),
+    rotation: new THREE.Euler(0, 0, 0),
+  },
+  upperArmRight: {
+    position: new THREE.Vector3(0.4, 1.2, 0),
+    rotation: new THREE.Euler(0, 0, 0),
+  },
+  lowerArmRight: {
+    position: new THREE.Vector3(0.4, 0.8, 0),
+    rotation: new THREE.Euler(0, 0, 0),
+  },
+  upperLegLeft: {
+    position: new THREE.Vector3(-0.2, 0, 0),
+    rotation: new THREE.Euler(0, 0, 0),
+  },
+  lowerLegLeft: {
+    position: new THREE.Vector3(-0.2, -0.4, 0),
+    rotation: new THREE.Euler(0, 0, 0),
+  },
+  upperLegRight: {
+    position: new THREE.Vector3(0.2, 0, 0),
+    rotation: new THREE.Euler(0, 0, 0),
+  },
+  lowerLegRight: {
+    position: new THREE.Vector3(0.2, -0.4, 0),
+    rotation: new THREE.Euler(0, 0, 0),
+  },
+  upperTorso: {
+    position: new THREE.Vector3(0, 1.2, 0),
+    rotation: new THREE.Euler(0, 0, 0),
+  },
+  lowerTorso: {
+    position: new THREE.Vector3(0, 0.4, 0),
+    rotation: new THREE.Euler(0, 0, 0),
+  },
+  head: {
+    position: new THREE.Vector3(0, 1.8, 0),
+    rotation: new THREE.Euler(0, 0, 0),
+  },
+  handLeft: {
+    position: new THREE.Vector3(-0.4, 0.6, 0),
+    rotation: new THREE.Euler(0, 0, 0),
+  },
+  handRight: {
+    position: new THREE.Vector3(0.4, 0.6, 0),
+    rotation: new THREE.Euler(0, 0, 0),
+  },
 };
 
 export interface CustomSceneProps {
@@ -77,13 +206,18 @@ export interface LimbState {
 // Add type for limb IDs
 export type LimbId =
   | "upperArmLeft"
-  | "upperArmRight"
   | "lowerArmLeft"
+  | "upperArmRight"
   | "lowerArmRight"
   | "upperLegLeft"
-  | "upperLegRight"
   | "lowerLegLeft"
-  | "lowerLegRight";
+  | "upperLegRight"
+  | "lowerLegRight"
+  | "upperTorso"
+  | "lowerTorso"
+  | "head"
+  | "handLeft"
+  | "handRight";
 
 // Add type for constraints
 export interface LimbConstraints {

@@ -4,6 +4,7 @@ export interface Position {
   id: string;
   name: string;
   timestamp: number;
+  height: number;
   limbs: {
     [key in LimbId]: {
       rotation: {
@@ -11,6 +12,7 @@ export interface Position {
         y: number;
         z: number;
       };
+      height: number;
     };
   };
 }

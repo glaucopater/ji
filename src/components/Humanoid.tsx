@@ -1,4 +1,6 @@
-import { useRef, useEffect } from "react";
+import {
+  useEffect
+} from "react";
 import * as THREE from "three";
 import { techniques } from "../data/techniques";
 import { useHumanoidAnimation } from "../hooks/useHumanoidAnimation";
@@ -8,7 +10,7 @@ import { LeftArm } from "./LeftArm";
 import { RightArm } from "./RightArm";
 import { LeftLeg } from "./LeftLeg";
 import { RightLeg } from "./RightLeg";
-
+import { Head } from "./Head";
 interface HumanoidProps {
   selectedTechnique?: JudoTechnique;
   onAnimationComplete?: () => void;
@@ -20,6 +22,11 @@ interface HumanoidProps {
   lowerLegLeftRef: React.RefObject<THREE.Group>;
   upperLegRightRef: React.RefObject<THREE.Group>;
   lowerLegRightRef: React.RefObject<THREE.Group>;
+  upperTorsoRef: React.RefObject<THREE.Group>;
+  lowerTorsoRef: React.RefObject<THREE.Group>;
+  headRef: React.RefObject<THREE.Group>;
+  handLeftRef: React.RefObject<THREE.Group>;
+  handRightRef: React.RefObject<THREE.Group>;
 }
 
 export function Humanoid({
@@ -33,10 +40,12 @@ export function Humanoid({
   lowerLegLeftRef,
   upperLegRightRef,
   lowerLegRightRef,
+  upperTorsoRef,
+  lowerTorsoRef,
+  headRef,
+  handLeftRef,
+  handRightRef,
 }: HumanoidProps) {
-  // Refs for animation
-  const spineRef = useRef<THREE.Group>(null);
-
   // Use animation hook
   const { playTechnique, setIdle } = useHumanoidAnimation({
     upperArmLeftRef,
@@ -47,7 +56,10 @@ export function Humanoid({
     lowerLegLeftRef,
     upperLegRightRef,
     lowerLegRightRef,
-    spineRef,
+    upperTorsoRef,
+    lowerTorsoRef,
+    handLeftRef,
+    handRightRef,
   });
 
   // Handle technique selection
@@ -68,7 +80,8 @@ export function Humanoid({
             upperArmRight: { x: 0 },
             lowerArmLeft: { x: 0 },
             lowerArmRight: { x: 0 },
-            spine: { x: 0 },
+            upperTorso: { x: 0 },
+            lowerTorso: { x: 0 },
             duration: 0.3,
           },
         ],
@@ -76,26 +89,28 @@ export function Humanoid({
 
       // After a brief delay, play the selected technique
       setTimeout(() => {
-        playTechnique(selectedTechnique.animation);
+        playTechnique({
+          ...selectedTechnique.animation,
+          loop: selectedTechnique.isToggle // Ensure looping is enabled for toggleable techniques
+        });
       }, 300);
 
-      // Calculate total duration including reset time
-      const totalDuration = selectedTechnique.animation.keyframes.reduce((sum, keyframe) => sum + keyframe.duration, 0) + 0.3;
-      console.log("Animation duration:", totalDuration, "seconds");
+      // Only set up completion timer for non-toggle techniques
+      if (!selectedTechnique.isToggle) {
+        const totalDuration = selectedTechnique.animation.keyframes.reduce((sum, keyframe) => sum + keyframe.duration, 0) + 0.3;
+        console.log("Animation duration:", totalDuration, "seconds");
 
-      // Notify when animation completes
-      const timer = setTimeout(() => {
-        console.log("Animation complete for:", selectedTechnique.name);
-        if (!selectedTechnique.isToggle) {
-          setIdle(false); // Keep idle off for toggle techniques
-        }
-        onAnimationComplete?.();
-      }, totalDuration * 1000);
+        const timer = setTimeout(() => {
+          console.log("Animation complete for:", selectedTechnique.name);
+          setIdle(false);
+          onAnimationComplete?.();
+        }, totalDuration * 1000);
 
-      return () => {
-        console.log("Cleaning up animation for:", selectedTechnique.name);
-        clearTimeout(timer);
-      };
+        return () => {
+          console.log("Cleaning up animation for:", selectedTechnique.name);
+          clearTimeout(timer);
+        };
+      }
     } else {
       // When no technique is selected, stop all animations
       playTechnique(null);
@@ -124,38 +139,25 @@ export function Humanoid({
   return (
     <group>
       <group position={[0, 0.1, 0]}>
-        <group ref={spineRef}>
-          {/* Head */}
-          <mesh position={[0, 2, 0]} scale={[0.6, 1, 0.7]} castShadow>
-            <sphereGeometry args={[0.3, 32, 32]} />
-            <meshStandardMaterial color='lightblue' />
-            {/* Eyes to show front direction */}
-            <mesh position={[0.15, 0, 0.25]} scale={0.1}>
-              <sphereGeometry args={[1, 16, 16]} />
-              <meshStandardMaterial color='black' />
-            </mesh>
-            <mesh position={[-0.15, 0, 0.25]} scale={0.1}>
-              <sphereGeometry args={[1, 16, 16]} />
-              <meshStandardMaterial color='black' />
-            </mesh>
-          </mesh>
-
-          {/* Torso - unified structure */}
-          <Torso />
-
-          {/* Arms and legs are now children of the spine group */}
-          {/* Left Arm */}
-          <LeftArm upperArmLeftRef={upperArmLeftRef} lowerArmLeftRef={lowerArmLeftRef} />
-
-          {/* Right Arm */}
-          <RightArm upperArmRightRef={upperArmRightRef} lowerArmRightRef={lowerArmRightRef} />
-
-          {/* Left Leg */}
-          <LeftLeg upperLegLeftRef={upperLegLeftRef} lowerLegLeftRef={lowerLegLeftRef} />
-
-          {/* Right Leg */}
-          <RightLeg upperLegRightRef={upperLegRightRef} lowerLegRightRef={lowerLegRightRef} />
-        </group>
+        <Torso
+          upperTorsoRef={upperTorsoRef}
+          lowerTorsoRef={lowerTorsoRef}
+          upperChildren={
+            <>
+              {/* Head and arms are children of upper torso */}
+              <Head headRef={headRef} />
+              <LeftArm upperArmLeftRef={upperArmLeftRef} lowerArmLeftRef={lowerArmLeftRef} />
+              <RightArm upperArmRightRef={upperArmRightRef} lowerArmRightRef={lowerArmRightRef} />
+            </>
+          }
+          lowerChildren={
+            <>
+              {/* Legs are children of lower torso */}
+              <LeftLeg upperLegLeftRef={upperLegLeftRef} lowerLegLeftRef={lowerLegLeftRef} />
+              <RightLeg upperLegRightRef={upperLegRightRef} lowerLegRightRef={lowerLegRightRef} />
+            </>
+          }
+        />
       </group>
     </group>
   );

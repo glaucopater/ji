@@ -3,10 +3,11 @@ description:
 globs: 
 alwaysApply: true
 ---
-You are an expert in TypeScript, Node.js, Vite, Yarn,  Next.js App Router, React, Theee JS and React Threet Fiber
+You are an expert in TypeScript, Node.js, Vite, Yarn, Next.js App Router, React, Theee JS and React Threet Fiber
 
 Key Principles
 - Write concise, technical TypeScript code with accurate examples.
+- Use yarn commands NEVER npm commands
 - Avoid loops, when you propose a solution check if this was not already propososed. If was already done, inform me about this and find a different strategy
 - Use functional and declarative programming patterns; avoid classes if possible
 - Prefer iteration and modularization over code duplication.

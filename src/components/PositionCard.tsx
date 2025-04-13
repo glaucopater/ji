@@ -31,20 +31,8 @@ export function PositionCard({ position, onClick }: PositionCardProps) {
         marginBottom: '15px'
       }}
     >
+
       <div style={{
-        aspectRatio: '1',
-        background: '#f0f0f0',
-        borderRadius: '4px',
-        marginBottom: '10px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        fontSize: '24px',
-        color: '#666'
-      }}>
-        📸
-      </div>
-      <div style={{ 
         fontFamily: 'monospace',
         fontSize: '0.9rem',
         marginBottom: '5px'

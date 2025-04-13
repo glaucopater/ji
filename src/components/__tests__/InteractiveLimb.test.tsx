@@ -1,6 +1,6 @@
 import { render } from "@testing-library/react";
-import { InteractiveLimb } from "../Scene";
-import { ActiveLimbContext, AxisControlsContext } from "../contexts";
+import { InteractiveLimb } from "../InteractiveLimb";
+import { ActiveLimbContext, AxisControlsContext } from "../Scene";
 import * as THREE from "three";
 import { LimbId } from "../../types/viewer";
 

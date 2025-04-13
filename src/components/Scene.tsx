@@ -10,7 +10,6 @@ import { Humanoid } from "./Humanoid";
 import {
   AxisControlData,
   DEFAULT_POSITIONS,
-  InteractiveLimbProps,
   LIMB_CONSTRAINTS,
   LimbId,
   ModelPosition,
@@ -24,193 +23,31 @@ import { usePositions } from '../hooks/usePositions';
 import { TabPanel } from './TabPanel';
 import { Positions } from './Positions';
 import './Scene.css';
-import { techniques } from '../data/techniques';
+import { DEFAULT_TECHNIQUES, techniques } from '../data/techniques';
 import { toast } from 'react-hot-toast';
+import { AxisControls } from "./AxisControls";
 
 // Add new context for active limb
-const ActiveLimbContext = React.createContext<{
+export const ActiveLimbContext = React.createContext<{
   activeLimbId: LimbId | null;
   setActiveLimbId: (id: LimbId | null) => void;
 }>({
   activeLimbId: null,
-  setActiveLimbId: () => {},
+  setActiveLimbId: () => { },
 });
 
 // Add new context for axis controls
-const AxisControlsContext = React.createContext<{
+export const AxisControlsContext = React.createContext<{
   controls: AxisControlData[];
   setControls: (controls: AxisControlData[]) => void;
 }>({
   controls: [],
-  setControls: () => {},
+  setControls: () => { },
 });
 
-export function Joint({ position }: { position: [number, number, number] }) {
-  return (
-    <mesh position={position}>
-      <sphereGeometry args={[0.08, 16, 16]} />
-      <meshStandardMaterial color='yellow' opacity={0.7} transparent />
-    </mesh>
-  );
-}
 
-// Move AxisControl component outside of Canvas
-function AxisControls() {
-  const { controls } = React.useContext(AxisControlsContext);
-  
-  if (controls.length === 0) return null;
 
-  const limbControls = controls.reduce((acc, control) => {
-    if (!acc[control.limbId]) {
-      acc[control.limbId] = [];
-    }
-    acc[control.limbId].push(control);
-    return acc;
-  }, {} as Record<LimbId, AxisControlData[]>);
 
-  return (
-    <div
-      style={{
-        position: "absolute",
-        top: "75%",
-        right: "20px",
-        transform: "translateY(-50%)",
-        display: "flex",
-        flexDirection: "column",
-        gap: "20px",
-        background: "rgba(0,0,0,0.7)",
-        padding: "20px",
-        borderRadius: "10px",
-        maxHeight: "80vh",
-        overflowY: "auto",
-      }}
-    >
-      {Object.entries(limbControls).map(([limbId, limbAxisControls]) => (
-        <div
-          key={limbId}
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            gap: "10px",
-            padding: "10px",
-            border: "1px solid rgba(255,255,255,0.2)",
-            borderRadius: "5px",
-          }}
-        >
-          <h3 style={{ color: "white", margin: "0 0 10px 0" }}>{limbId}</h3>
-          {limbAxisControls.map(control => (
-            <div
-              key={control.axis}
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                gap: "5px",
-              }}
-            >
-              <label style={{ color: control.axis === "x" ? "red" : control.axis === "y" ? "green" : "blue" }}>
-                {control.axis.toUpperCase()} Rotation
-              </label>
-              <input
-                type='range'
-                min={control.min}
-                max={control.max}
-                step={0.01}
-                value={control.value}
-                onChange={e => control.onChange(parseFloat(e.target.value))}
-                style={{ width: "200px" }}
-              />
-              <span style={{ color: "white" }}>{((control.value * 180) / Math.PI).toFixed(0)}°</span>
-            </div>
-          ))}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// Updated InteractiveLimb component
-export const InteractiveLimb: React.FC<InteractiveLimbProps> = ({ geometry, color, position, groupRef, limbId }) => {
-  const { activeLimbId, setActiveLimbId } = React.useContext(ActiveLimbContext);
-  const { setControls } = React.useContext(AxisControlsContext);
-  const [isHovered, setIsHovered] = useState(false);
-  const meshRef = useRef<THREE.Mesh>(null);
-  const rotationRef = useRef<{ x: number; y: number; z: number }>({ x: 0, y: 0, z: 0 });
-
-  const isActive = activeLimbId === limbId;
-
-  // Load saved position on mount
-  useEffect(() => {
-    const savedPositions = localStorage.getItem("limbPositions");
-    if (savedPositions) {
-      const positions = JSON.parse(savedPositions) as StoredLimbPositions;
-      if (positions[limbId] && groupRef.current) {
-        const rotation = positions[limbId].rotation;
-        groupRef.current.rotation.set(rotation.x, rotation.y, rotation.z);
-        rotationRef.current = rotation;
-      }
-    }
-  }, [limbId]);
-
-  // Update controls function
-  const updateControls = React.useCallback(() => {
-    if (groupRef.current) {
-      const axes: RotationAxis[] = ["x", "y", "z"];
-      const controls: AxisControlData[] = axes.map(axis => ({
-        limbId,
-        axis,
-        value: groupRef.current!.rotation[axis],
-        min: LIMB_CONSTRAINTS[limbId].rotation[axis][0],
-        max: LIMB_CONSTRAINTS[limbId].rotation[axis][1],
-        onChange: value => {
-          if (groupRef.current) {
-            const constraints = LIMB_CONSTRAINTS[limbId];
-            const clampedValue = Math.max(constraints.rotation[axis][0], Math.min(constraints.rotation[axis][1], value));
-            groupRef.current.rotation[axis] = clampedValue;
-            rotationRef.current[axis] = clampedValue;
-
-            // Save to localStorage
-            const savedPositions = localStorage.getItem("limbPositions");
-            const positions = savedPositions ? (JSON.parse(savedPositions) as StoredLimbPositions) : {};
-            positions[limbId] = {
-              rotation: rotationRef.current,
-            };
-            localStorage.setItem("limbPositions", JSON.stringify(positions));
-
-            // Force control update
-            updateControls();
-          }
-        },
-      }));
-      setControls(controls);
-    }
-  }, [limbId, groupRef, setControls]);
-
-  // Update controls when active
-  useEffect(() => {
-    if (isActive && groupRef.current) {
-      updateControls();
-    } else if (!isActive) {
-      setControls([]);
-    }
-  }, [isActive, updateControls]);
-
-  const handleClick = () => {
-    setActiveLimbId(isActive ? null : limbId);
-  };
-
-  return (
-    <mesh
-      ref={meshRef}
-      position={position}
-      onPointerOver={() => setIsHovered(true)}
-      onPointerOut={() => setIsHovered(false)}
-      onClick={handleClick}
-    >
-      <cylinderGeometry args={[geometry[0], geometry[1], geometry[2], 32]} />
-      <meshStandardMaterial color={isActive ? "#ff0000" : isHovered ? "#ff8800" : color} opacity={0.8} transparent />
-    </mesh>
-  );
-};
 
 // Camera control buttons UI component
 
@@ -221,29 +58,29 @@ function CameraController() {
 
   const handleRotate = React.useCallback(
     (axis: "x" | "y" | "z", angle: number) => {
-    const position = camera.position.clone();
-    const target = new THREE.Vector3(0, 1.5, 0);
-    const matrix = new THREE.Matrix4();
-    
-    switch (axis) {
+      const position = camera.position.clone();
+      const target = new THREE.Vector3(0, 1.5, 0);
+      const matrix = new THREE.Matrix4();
+
+      switch (axis) {
         case "x":
-        matrix.makeRotationX(angle);
-        break;
+          matrix.makeRotationX(angle);
+          break;
         case "y":
-        matrix.makeRotationY(angle);
-        break;
+          matrix.makeRotationY(angle);
+          break;
         case "z":
-        matrix.makeRotationZ(angle);
-        break;
-    }
-    
-    position.sub(target);
-    position.applyMatrix4(matrix);
-    position.add(target);
-    
-    camera.position.copy(position);
-    camera.lookAt(target);
-    forceRender({}); // Force a re-render to update the view
+          matrix.makeRotationZ(angle);
+          break;
+      }
+
+      position.sub(target);
+      position.applyMatrix4(matrix);
+      position.add(target);
+
+      camera.position.copy(position);
+      camera.lookAt(target);
+      forceRender({}); // Force a re-render to update the view
     },
     [camera]
   );
@@ -278,14 +115,14 @@ function ModelPositionController({
   // Load saved position or use default
   const [modelPosition, setModelPosition] = React.useState<ModelPosition>(() => {
     const savedPosition = localStorage.getItem("humanoidPosition");
-    return savedPosition ? JSON.parse(savedPosition) : { y: 5 };
+    return savedPosition ? JSON.parse(savedPosition) : { y: 0 };
   });
 
   const handleMove = React.useCallback((_axis: "y", amount: number) => {
     setModelPosition((prev: ModelPosition) => {
       const newY = prev.y + amount;
-      // Allow model to get closer to the mat (0.1 units minimum)
-      const position = { y: Math.max(0.1, newY) };
+      // Allow model to move all the way down to the tatami (Y=0)
+      const position = { y: Math.max(0, newY) };
       // Save position to localStorage
       localStorage.setItem("humanoidPosition", JSON.stringify(position));
       return position;
@@ -296,6 +133,11 @@ function ModelPositionController({
   React.useEffect(() => {
     // @ts-ignore
     window.__modelMove = handleMove;
+    // @ts-ignore
+    window.__modelReset = () => {
+      setModelPosition({ y: 0 });
+      localStorage.setItem("humanoidPosition", JSON.stringify({ y: 0 }));
+    };
   }, [handleMove]);
 
   // Handle technique selection
@@ -303,15 +145,16 @@ function ModelPositionController({
     if (selectedTechnique) {
       console.log('Applying technique:', selectedTechnique.id);
       // Reset limbs to default position first
-    Object.entries(DEFAULT_POSITIONS).forEach(([limbId, defaultState]) => {
+      Object.entries(DEFAULT_POSITIONS).forEach(([limbId, defaultState]) => {
         const savedPositions = localStorage.getItem("limbPositions");
         const positions = savedPositions ? (JSON.parse(savedPositions) as StoredLimbPositions) : {};
-      positions[limbId] = {
-        rotation: {
-          x: defaultState.rotation.x,
-          y: defaultState.rotation.y,
+        positions[limbId] = {
+          rotation: {
+            x: defaultState.rotation.x,
+            y: defaultState.rotation.y,
             z: defaultState.rotation.z,
           },
+          height: 0
         };
         localStorage.setItem("limbPositions", JSON.stringify(positions));
       });
@@ -325,40 +168,7 @@ function ModelPositionController({
   );
 }
 
-const DEFAULT_TECHNIQUES = [
-  {
-    id: 'walking',
-    name: 'Walking',
-    nameJa: '歩く',
-    description: 'Basic walking motion',
-    tags: ['Movement', 'Basic'],
-    isActive: false,
-  },
-  {
-    id: 'ippon-seoi-nage',
-    name: 'Ippon Seoi Nage',
-    nameJa: '一本背負投',
-    description: 'One-shoulder throw',
-    tags: ['Throwing Technique', 'Intermediate'],
-    isActive: false,
-  },
-  {
-    id: 'o-soto-gari',
-    name: 'O Soto Gari',
-    nameJa: '大外刈',
-    description: 'Major outer reap',
-    tags: ['Throwing Technique', 'Advanced'],
-    isActive: false,
-  },
-  {
-    id: 'deep-crouch',
-    name: 'Deep Crouch',
-    nameJa: 'Shizentai',
-    description: 'Deep crouching stance with proper biomechanical alignment',
-    tags: ['Stance', 'Intermediate'],
-    isActive: false,
-  }
-];
+
 
 // Add ScreenshotTool component at the top level
 function ScreenshotTool() {
@@ -374,7 +184,7 @@ function ScreenshotTool() {
     try {
       // Convert the canvas to a data URL
       const dataUrl = canvas.toDataURL('image/png');
-      
+
       // Create a timestamp for the filename
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const filename = `judo-scene-${timestamp}.png`;
@@ -407,6 +217,11 @@ export function Scene({ children }: CustomSceneProps) {
   const [activeLimbId, setActiveLimbId] = useState<LimbId | null>(null);
   const [axisControls, setAxisControls] = useState<AxisControlData[]>([]);
   const [currentTechnique, setCurrentTechnique] = useState<JudoTechnique | undefined>(undefined);
+  const [activeTechniqueId, setActiveTechniqueId] = useState<string | null>(null);
+  const [currentHeight, setCurrentHeight] = useState(() => {
+    const savedPosition = localStorage.getItem("humanoidPosition");
+    return savedPosition ? JSON.parse(savedPosition).y : 0;
+  });
 
   // Create refs for all limbs
   const upperArmLeftRef = useRef<THREE.Group>(null);
@@ -417,6 +232,11 @@ export function Scene({ children }: CustomSceneProps) {
   const lowerLegLeftRef = useRef<THREE.Group>(null);
   const upperLegRightRef = useRef<THREE.Group>(null);
   const lowerLegRightRef = useRef<THREE.Group>(null);
+  const upperTorsoRef = useRef<THREE.Group>(null);
+  const lowerTorsoRef = useRef<THREE.Group>(null);
+  const headRef = useRef<THREE.Group>(null);
+  const handLeftRef = useRef<THREE.Group>(null);
+  const handRightRef = useRef<THREE.Group>(null);
 
   // Store all refs in the limbsRef object
   const limbsRef = useRef<{ [key in LimbId]?: React.RefObject<THREE.Group> }>({
@@ -428,6 +248,11 @@ export function Scene({ children }: CustomSceneProps) {
     lowerLegLeft: lowerLegLeftRef,
     upperLegRight: upperLegRightRef,
     lowerLegRight: lowerLegRightRef,
+    upperTorso: upperTorsoRef,
+    lowerTorso: lowerTorsoRef,
+    head: headRef,
+    handLeft: handLeftRef,
+    handRight: handRightRef,
   });
 
   const [, setSavedTechniques] = useState<any[]>([]);
@@ -460,7 +285,24 @@ export function Scene({ children }: CustomSceneProps) {
   const handleMove = React.useCallback((axis: "y", amount: number) => {
     // @ts-ignore
     window.__modelMove?.(axis, amount);
+    setCurrentHeight((prev: number) => {
+      const newHeight = Math.max(0, prev + amount);
+      // Update localStorage immediately
+      localStorage.setItem("humanoidPosition", JSON.stringify({ y: newHeight }));
+      // Force update the model position
+      // @ts-ignore
+      window.__modelMove?.("y", newHeight - prev);
+      return newHeight;
+    });
   }, []);
+
+  // Add a reset height function
+  const handleResetHeight = React.useCallback(() => {
+    setCurrentHeight(0);
+    localStorage.setItem("humanoidPosition", JSON.stringify({ y: 0 }));
+    // @ts-ignore
+    window.__modelMove?.("y", -currentHeight);
+  }, [currentHeight]);
 
   const handlePositionSelect = (position: Position) => {
     console.log('Selected position:', position);
@@ -487,16 +329,30 @@ export function Scene({ children }: CustomSceneProps) {
           limbRef.current.rotation.set(rotation.x, rotation.y, rotation.z);
         }
       });
-      
+
       // Save to localStorage
       const positions = {} as StoredLimbPositions;
       Object.entries(position.limbs).forEach(([id, data]) => {
         positions[id as LimbId] = {
           rotation: data.rotation,
+          height: data.height || 0
         };
       });
       localStorage.setItem("limbPositions", JSON.stringify(positions));
-      
+
+      // Set the height directly
+      if (position.height !== undefined) {
+        localStorage.setItem("humanoidPosition", JSON.stringify({ y: position.height }));
+        setCurrentHeight(position.height);
+        // @ts-ignore
+        window.__modelMove?.("y", position.height - currentHeight);
+      } else {
+        localStorage.setItem("humanoidPosition", JSON.stringify({ y: 0 }));
+        setCurrentHeight(0);
+        // @ts-ignore
+        window.__modelMove?.("y", -currentHeight);
+      }
+
       // Update axis controls if a limb is active
       if (activeLimbId && position.limbs[activeLimbId]) {
         const rotation = position.limbs[activeLimbId].rotation;
@@ -516,12 +372,12 @@ export function Scene({ children }: CustomSceneProps) {
                 Math.min(constraints.rotation[axis][1], value)
               );
               limbRef.current.rotation[axis] = clampedValue;
-              
+
               // Save to localStorage
               const savedPositions = localStorage.getItem("limbPositions");
               const positions = savedPositions ? (JSON.parse(savedPositions) as StoredLimbPositions) : {};
               if (!positions[activeLimbId]) {
-                positions[activeLimbId] = { rotation: { x: 0, y: 0, z: 0 } };
+                positions[activeLimbId] = { rotation: { x: 0, y: 0, z: 0 }, height: 0 };
               }
               positions[activeLimbId].rotation[axis] = clampedValue;
               localStorage.setItem("limbPositions", JSON.stringify(positions));
@@ -537,34 +393,40 @@ export function Scene({ children }: CustomSceneProps) {
   };
 
   const handleCapture = () => {
-    console.log('Taking screenshot...');
-    const savedPositions = localStorage.getItem("limbPositions");
-    const currentLimbs = savedPositions ? JSON.parse(savedPositions) : {};
-    
-    const limbs = Object.entries(currentLimbs).reduce((acc, [id, data]) => {
-      const rotation = (data as any).rotation;
-      if (rotation.x !== 0 || rotation.y !== 0 || rotation.z !== 0) {
-        acc[id as LimbId] = { rotation };
-      }
-      return acc;
-    }, {} as Position['limbs']);
+    // Initialize with default positions
+    const currentPositions: Position['limbs'] = {
+      upperArmLeft: { rotation: { x: 0, y: 0, z: 0 }, height: currentHeight },
+      lowerArmLeft: { rotation: { x: 0, y: 0, z: 0 }, height: currentHeight },
+      upperArmRight: { rotation: { x: 0, y: 0, z: 0 }, height: currentHeight },
+      lowerArmRight: { rotation: { x: 0, y: 0, z: 0 }, height: currentHeight },
+      handLeft: { rotation: { x: 0, y: 0, z: 0 }, height: currentHeight },
+      handRight: { rotation: { x: 0, y: 0, z: 0 }, height: currentHeight },
+      upperLegLeft: { rotation: { x: 0, y: 0, z: 0 }, height: currentHeight },
+      lowerLegLeft: { rotation: { x: 0, y: 0, z: 0 }, height: currentHeight },
+      upperLegRight: { rotation: { x: 0, y: 0, z: 0 }, height: currentHeight },
+      lowerLegRight: { rotation: { x: 0, y: 0, z: 0 }, height: currentHeight },
+      upperTorso: { rotation: { x: 0, y: 0, z: 0 }, height: currentHeight },
+      lowerTorso: { rotation: { x: 0, y: 0, z: 0 }, height: currentHeight },
+      head: { rotation: { x: 0, y: 0, z: 0 }, height: currentHeight }
+    };
 
-    // Add the new position
-    const newPosition = addPosition(limbs);
-    console.log('Added new position:', newPosition.name);
-    
-    // Force a refresh by updating state
-    setRefreshTrigger(prev => prev + 1);
-    
-    // Switch to positions tab after a short delay
-    setTimeout(() => {
-      const positionsTab = document.querySelector('.tab-button:nth-child(2)');
-      if (positionsTab) {
-        (positionsTab as HTMLElement).click();
+    // Update with current positions
+    Object.entries(limbsRef.current).forEach(([id, ref]) => {
+      if (ref?.current) {
+        currentPositions[id as LimbId] = {
+          rotation: {
+            x: ref.current.rotation.x,
+            y: ref.current.rotation.y,
+            z: ref.current.rotation.z
+          },
+          height: currentHeight
+        };
       }
-    }, 100);
-    
-    return limbs;
+    });
+
+    const newPosition = addPosition(currentPositions, currentHeight);
+    setCurrentHeight(newPosition.height);
+    setRefreshTrigger(prev => prev + 1); // Force refresh of positions list
   };
 
   const handleExportPositions = () => {
@@ -573,7 +435,7 @@ export function Scene({ children }: CustomSceneProps) {
       try {
         const positions = JSON.parse(savedPositions);
         const dataStr = JSON.stringify(positions, null, 2);
-        const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+        const dataUri = 'data:application/json;charset=utf-8,' + encodeURIComponent(dataStr);
         const exportFileDefaultName = `judo-positions-${new Date().toISOString().split('T')[0]}.json`;
 
         const linkElement = document.createElement('a');
@@ -596,7 +458,7 @@ export function Scene({ children }: CustomSceneProps) {
             <Suspense fallback={null}>
               <ambientLight intensity={0.5} />
               <directionalLight position={[10, 10, 5]} intensity={1} />
-              
+
               <Tatami size={8} tilesPerSide={8} />
               <ModelPositionController selectedTechnique={currentTechnique}>
                 <Humanoid
@@ -608,10 +470,15 @@ export function Scene({ children }: CustomSceneProps) {
                   lowerLegLeftRef={lowerLegLeftRef}
                   upperLegRightRef={upperLegRightRef}
                   lowerLegRightRef={lowerLegRightRef}
+                  upperTorsoRef={upperTorsoRef}
+                  lowerTorsoRef={lowerTorsoRef}
+                  headRef={headRef}
+                  handLeftRef={handLeftRef}
+                  handRightRef={handRightRef}
                   selectedTechnique={currentTechnique}
                 />
               </ModelPositionController>
-              
+
               {children}
 
               <OrbitControls minDistance={2} maxDistance={8} target={[0, 1.5, 0]} enableDamping dampingFactor={0.05} />
@@ -620,7 +487,7 @@ export function Scene({ children }: CustomSceneProps) {
             </Suspense>
           </Canvas>
           <AxisControls />
-          
+
           {/* Right side controls */}
           <div className="right-controls">
             {/* Camera controls */}
@@ -675,6 +542,7 @@ export function Scene({ children }: CustomSceneProps) {
             <div className="model-controls">
               <button
                 onClick={() => {
+                  console.log('Resetting limbs...');
                   // Apply default positions without reloading
                   Object.entries(DEFAULT_POSITIONS).forEach(([limbId, defaultState]) => {
                     const limbRef = limbsRef.current[limbId as LimbId];
@@ -686,7 +554,12 @@ export function Scene({ children }: CustomSceneProps) {
                       );
                     }
                   });
-                  
+
+                  // Reset height to 0
+                  // @ts-ignore
+                  window.__modelReset?.();
+                  setCurrentHeight(0);
+
                   // Save to localStorage
                   const positions = {} as StoredLimbPositions;
                   Object.entries(DEFAULT_POSITIONS).forEach(([limbId, defaultState]) => {
@@ -696,10 +569,11 @@ export function Scene({ children }: CustomSceneProps) {
                         y: defaultState.rotation.y,
                         z: defaultState.rotation.z,
                       },
+                      height: 0
                     };
                   });
                   localStorage.setItem("limbPositions", JSON.stringify(positions));
-                  
+
                   // Update axis controls if a limb is active
                   if (activeLimbId) {
                     const defaultRotation = DEFAULT_POSITIONS[activeLimbId].rotation;
@@ -719,12 +593,12 @@ export function Scene({ children }: CustomSceneProps) {
                             Math.min(constraints.rotation[axis][1], value)
                           );
                           limbRef.current.rotation[axis] = clampedValue;
-                          
+
                           // Save to localStorage
                           const savedPositions = localStorage.getItem("limbPositions");
                           const positions = savedPositions ? (JSON.parse(savedPositions) as StoredLimbPositions) : {};
                           if (!positions[activeLimbId]) {
-                            positions[activeLimbId] = { rotation: { x: 0, y: 0, z: 0 } };
+                            positions[activeLimbId] = { rotation: { x: 0, y: 0, z: 0 }, height: 0 };
                           }
                           positions[activeLimbId].rotation[axis] = clampedValue;
                           localStorage.setItem("limbPositions", JSON.stringify(positions));
@@ -755,9 +629,40 @@ export function Scene({ children }: CustomSceneProps) {
               <button onClick={() => handleMove("y", -0.1)} style={{ backgroundColor: "#f44336", color: "white", padding: "8px 16px" }}>
                 Move Down
               </button>
-              <ScreenshotButton 
-                onCapture={() => handleCapture()} 
+              <ScreenshotButton
+                onCapture={() => handleCapture()}
+                currentHeight={currentHeight}
               />
+
+              {/* Height display */}
+              <div
+                style={{
+                  background: "rgba(0,0,0,0.7)",
+                  padding: "10px",
+                  borderRadius: "5px",
+                  color: "white",
+                  marginTop: "10px"
+                }}
+              >
+                <h4 style={{ margin: "0 0 10px 0" }}>Current Height</h4>
+                <div style={{ marginLeft: "10px" }}>
+                  {currentHeight.toFixed(2)} units
+                </div>
+              </div>
+
+              {/* Reset height button */}
+              <button 
+                onClick={handleResetHeight}
+                style={{ 
+                  backgroundColor: "#ff9800", 
+                  color: "white", 
+                  padding: "8px 16px",
+                  marginTop: "10px",
+                  width: "100%"
+                }}
+              >
+                Reset Height
+              </button>
 
               {/* Limb details moved below Save Position button */}
               <div
@@ -766,7 +671,7 @@ export function Scene({ children }: CustomSceneProps) {
                   padding: "10px",
                   borderRadius: "5px",
                   color: "white",
-                  maxHeight: "300px",
+                  maxHeight: "250px",
                   overflowY: "auto",
                   marginTop: "10px"
                 }}
@@ -779,6 +684,7 @@ export function Scene({ children }: CustomSceneProps) {
                       x: {(data.rotation.x * 180 / Math.PI).toFixed(1)}°
                       y: {(data.rotation.y * 180 / Math.PI).toFixed(1)}°
                       z: {(data.rotation.z * 180 / Math.PI).toFixed(1)}°
+                      height: {data.height?.toFixed(2) || '0.00'}
                     </div>
                   </div>
                 ))}
@@ -789,41 +695,15 @@ export function Scene({ children }: CustomSceneProps) {
           {/* Left side panel */}
           <div className="techniques-grid">
             <TabPanel>
-              <div className="saved-techniques">
-                <h3>Techniques</h3>
-                {DEFAULT_TECHNIQUES.map((technique) => (
-                  <div 
-                    key={technique.id} 
-                    className="technique-card"
-                    onClick={() => {
-                      console.log('Selected technique:', technique.id);
-                      const techObj = techniques.find(t => t.id === technique.id);
-                      if (techObj) {
-                        setCurrentTechnique(techObj);
-                      } else {
-                        setCurrentTechnique(undefined);
-                      }
-                    }}
-                  >
-                    <h4>{technique.name}</h4>
-                    <p className="japanese-name">{technique.nameJa}</p>
-                    <p className="description">{technique.description}</p>
-                    <div className="technique-tags">
-                      {technique.tags.map((tag, index) => (
-                        <span key={index} className="technique-tag">{tag}</span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
-              </div>
-              
+
+
               {/* Positions tab as a SEPARATE tab */}
               <div className="positions-tab">
                 <h3>Saved Positions</h3>
                 <Positions onPositionSelect={handlePositionSelect} key={refreshTrigger} />
-                
+
                 {/* Default generic position as initial state */}
-                <div 
+                <div
                   className="position-card"
                   onClick={() => {
                     // Apply default positions without reloading
@@ -837,7 +717,7 @@ export function Scene({ children }: CustomSceneProps) {
                         );
                       }
                     });
-                    
+
                     // Save to localStorage
                     const positions = {} as StoredLimbPositions;
                     Object.entries(DEFAULT_POSITIONS).forEach(([limbId, defaultState]) => {
@@ -847,10 +727,11 @@ export function Scene({ children }: CustomSceneProps) {
                           y: defaultState.rotation.y,
                           z: defaultState.rotation.z,
                         },
+                        height: 0
                       };
                     });
                     localStorage.setItem("limbPositions", JSON.stringify(positions));
-                    
+
                     // Update axis controls if a limb is active
                     if (activeLimbId) {
                       const defaultRotation = DEFAULT_POSITIONS[activeLimbId].rotation;
@@ -870,12 +751,12 @@ export function Scene({ children }: CustomSceneProps) {
                               Math.min(constraints.rotation[axis][1], value)
                             );
                             limbRef.current.rotation[axis] = clampedValue;
-                            
+
                             // Save to localStorage
                             const savedPositions = localStorage.getItem("limbPositions");
                             const positions = savedPositions ? (JSON.parse(savedPositions) as StoredLimbPositions) : {};
                             if (!positions[activeLimbId]) {
-                              positions[activeLimbId] = { rotation: { x: 0, y: 0, z: 0 } };
+                              positions[activeLimbId] = { rotation: { x: 0, y: 0, z: 0 }, height: 0 };
                             }
                             positions[activeLimbId].rotation[axis] = clampedValue;
                             localStorage.setItem("limbPositions", JSON.stringify(positions));
@@ -910,6 +791,46 @@ export function Scene({ children }: CustomSceneProps) {
                 >
                   Export All Positions
                 </button>
+              </div>
+
+              <div className="saved-techniques">
+                <h3>Techniques</h3>
+                {DEFAULT_TECHNIQUES.map((technique) => (
+                  <div
+                    key={technique.id}
+                    className={`technique-card ${activeTechniqueId === technique.id ? 'active' : ''}`}
+                    onClick={() => {
+                      console.log('Selected technique:', technique.id);
+                      const techObj = techniques.find(t => t.id === technique.id);
+                      if (techObj) {
+                        if (activeTechniqueId === technique.id) {
+                          // If clicking the active technique, deactivate it
+                          setActiveTechniqueId(null);
+                          setCurrentTechnique(undefined);
+                        } else {
+                          // If clicking a different technique, activate it
+                          setActiveTechniqueId(technique.id);
+                          setCurrentTechnique(techObj);
+                        }
+                      } else {
+                        setActiveTechniqueId(null);
+                        setCurrentTechnique(undefined);
+                      }
+                    }}
+                  >
+                    <h4>{technique.name}</h4>
+                    <p className="japanese-name">{technique.nameJa}</p>
+                    <p className="description">{technique.description}</p>
+                    <div className="technique-tags">
+                      {technique.tags.map((tag, index) => (
+                        <span key={index} className="technique-tag">{tag}</span>
+                      ))}
+                    </div>
+                    <div className="technique-status">
+                      {activeTechniqueId === technique.id ? 'Active' : 'Inactive'}
+                    </div>
+                  </div>
+                ))}
               </div>
             </TabPanel>
           </div>

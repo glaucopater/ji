@@ -23,7 +23,10 @@ const jointToRefMap = {
   lowerLegLeft: 'lowerLegLeftRef',
   upperLegRight: 'upperLegRightRef',
   lowerLegRight: 'lowerLegRightRef',
-  spine: 'spineRef'
+  upperTorso: 'upperTorsoRef',
+  lowerTorso: 'lowerTorsoRef',
+  handLeft: 'handLeftRef',
+  handRight: 'handRightRef'
 } as const;
 
 export function useHumanoidAnimation(refs: JointRefs) {
@@ -70,6 +73,7 @@ export function useHumanoidAnimation(refs: JointRefs) {
     const speed = 1.5;
     const armSwing = 0.3;
     const legSwing = 0.2;
+    const handSwing = 0.2;
 
     // Safely apply rotations only if refs exist
     const safeRotate = (ref: RefObject<THREE.Group | null>, rotation: number) => {
@@ -83,6 +87,10 @@ export function useHumanoidAnimation(refs: JointRefs) {
     safeRotate(refs.lowerArmRightRef, Math.max(0, -Math.sin(t * speed) * 0.2));
     safeRotate(refs.upperArmLeftRef, -Math.sin(t * speed) * armSwing);
     safeRotate(refs.lowerArmLeftRef, Math.max(0, Math.sin(t * speed) * 0.2));
+
+    // Hands
+    safeRotate(refs.handRightRef, Math.sin(t * speed) * handSwing);
+    safeRotate(refs.handLeftRef, -Math.sin(t * speed) * handSwing);
 
     // Legs
     safeRotate(refs.upperLegRightRef, Math.sin(t * speed) * legSwing);

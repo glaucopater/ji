@@ -1,6 +1,6 @@
 import { Group } from "three";
 import { Joint } from "./Joint";
-import { InteractiveLimb } from "./Scene";
+import { InteractiveLimb } from "./InteractiveLimb";
 
 interface RightLegProps {
   upperLegRightRef: React.RefObject<Group>;
