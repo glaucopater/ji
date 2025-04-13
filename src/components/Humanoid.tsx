@@ -1,4 +1,6 @@
-import { useRef, useEffect } from "react";
+import {
+  useEffect
+} from "react";
 import * as THREE from "three";
 import { techniques } from "../data/techniques";
 import { useHumanoidAnimation } from "../hooks/useHumanoidAnimation";
@@ -23,6 +25,8 @@ interface HumanoidProps {
   upperTorsoRef: React.RefObject<THREE.Group>;
   lowerTorsoRef: React.RefObject<THREE.Group>;
   headRef: React.RefObject<THREE.Group>;
+  handLeftRef: React.RefObject<THREE.Group>;
+  handRightRef: React.RefObject<THREE.Group>;
 }
 
 export function Humanoid({
@@ -39,6 +43,8 @@ export function Humanoid({
   upperTorsoRef,
   lowerTorsoRef,
   headRef,
+  handLeftRef,
+  handRightRef,
 }: HumanoidProps) {
   // Use animation hook
   const { playTechnique, setIdle } = useHumanoidAnimation({
@@ -52,6 +58,8 @@ export function Humanoid({
     lowerLegRightRef,
     upperTorsoRef,
     lowerTorsoRef,
+    handLeftRef,
+    handRightRef,
   });
 
   // Handle technique selection
@@ -131,8 +139,8 @@ export function Humanoid({
   return (
     <group>
       <group position={[0, 0.1, 0]}>
-        <Torso 
-          upperTorsoRef={upperTorsoRef} 
+        <Torso
+          upperTorsoRef={upperTorsoRef}
           lowerTorsoRef={lowerTorsoRef}
           upperChildren={
             <>

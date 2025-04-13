@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { InteractiveLimb } from "./Scene";
+import { InteractiveLimb } from "./InteractiveLimb";
 
 interface HeadProps {
   headRef: React.RefObject<THREE.Group>;

@@ -5,4 +5,4 @@ export function Joint({ position }: { position: [number, number, number] }) {
       <meshStandardMaterial color='yellow' opacity={0.7} transparent />
     </mesh>
   );
-}
+} 

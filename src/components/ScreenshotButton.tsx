@@ -28,8 +28,7 @@ export function ScreenshotButton({ onCapture }: ScreenshotButtonProps) {
         width: "100%"
       }}
     >
-      <span>Save Position</span>
-      <span>📸</span>
+      <span>Save Position</span>      
     </button>
   );
 } 

@@ -12,6 +12,8 @@ export interface JointRefs {
   lowerLegRightRef: RefObject<Group>;
   upperTorsoRef: RefObject<Group>;
   lowerTorsoRef: RefObject<Group>;
+  handLeftRef: RefObject<Group>;
+  handRightRef: RefObject<Group>;
 }
 
 export interface TechniqueKeyframe {

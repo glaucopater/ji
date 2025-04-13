@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { ReactNode } from "react";
-import { InteractiveLimb } from "./Scene";
-
+import { InteractiveLimb } from "./InteractiveLimb";
+ 
 interface TorsoProps {
   upperTorsoRef: React.RefObject<THREE.Group>;
   lowerTorsoRef: React.RefObject<THREE.Group>;

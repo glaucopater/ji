@@ -10,7 +10,7 @@ export interface TabPanelProps {
 export function TabPanel({ children }: TabPanelProps) {
   const [activeTab, setActiveTab] = useState(0);
   const { refreshPositions } = usePositions();
-  
+
   // Handle tab change
   const handleTabChange = (tabIndex: number) => {
     setActiveTab(tabIndex);
@@ -21,6 +21,8 @@ export function TabPanel({ children }: TabPanelProps) {
     }
   };
 
+
+  // first position tab is positions, second is techniques
   return (
     <div className="tab-panel">
       <div className="tab-buttons">
@@ -28,13 +30,13 @@ export function TabPanel({ children }: TabPanelProps) {
           className={`tab-button ${activeTab === 0 ? 'active' : ''}`}
           onClick={() => handleTabChange(0)}
         >
-          Techniques
+          Positions
         </button>
         <button
           className={`tab-button ${activeTab === 1 ? 'active' : ''}`}
           onClick={() => handleTabChange(1)}
         >
-          Positions
+          Techniques
         </button>
       </div>
       <div className="tab-content">

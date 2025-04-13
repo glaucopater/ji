@@ -30,7 +30,7 @@ export function usePositions() {
     loadPositionsFromStorage();
   }, [loadPositionsFromStorage]);
 
-  const addPosition = (limbs: Position['limbs']) => {
+  const addPosition = (limbs: Position['limbs'], height: number) => {
     // Filter out limbs with zero rotations
     const filteredLimbs = Object.entries(limbs).reduce((acc, [id, data]) => {
       const rotation = (data as any).rotation;
@@ -45,6 +45,7 @@ export function usePositions() {
       id: uuidv4(),
       name: `Position ${library.lastPositionNumber + 1}`,
       timestamp: Date.now(),
+      height,
       limbs: filteredLimbs
     };
 
@@ -77,21 +78,29 @@ export function usePositions() {
   };
 
   const loadPosition = (position: Position) => {
-    // For any limb not in the position, assume zero rotation
+    // For any limb not in the position, assume zero rotation and height
     const defaultLimbs: Position['limbs'] = {
-      upperArmLeft: { rotation: { x: 0, y: 0, z: 0 } },
-      upperArmRight: { rotation: { x: 0, y: 0, z: 0 } },
-      lowerArmLeft: { rotation: { x: 0, y: 0, z: 0 } },
-      lowerArmRight: { rotation: { x: 0, y: 0, z: 0 } },
-      upperLegLeft: { rotation: { x: 0, y: 0, z: 0 } },
-      upperLegRight: { rotation: { x: 0, y: 0, z: 0 } },
-      lowerLegLeft: { rotation: { x: 0, y: 0, z: 0 } },
-      lowerLegRight: { rotation: { x: 0, y: 0, z: 0 } }
+      upperArmLeft: { rotation: { x: 0, y: 0, z: 0 }, height: 0 },
+      upperArmRight: { rotation: { x: 0, y: 0, z: 0 }, height: 0 },
+      lowerArmLeft: { rotation: { x: 0, y: 0, z: 0 }, height: 0 },
+      lowerArmRight: { rotation: { x: 0, y: 0, z: 0 }, height: 0 },
+      upperLegLeft: { rotation: { x: 0, y: 0, z: 0 }, height: 0 },
+      upperLegRight: { rotation: { x: 0, y: 0, z: 0 }, height: 0 },
+      lowerLegLeft: { rotation: { x: 0, y: 0, z: 0 }, height: 0 },
+      lowerLegRight: { rotation: { x: 0, y: 0, z: 0 }, height: 0 },
+      handLeft: { rotation: { x: 0, y: 0, z: 0 }, height: 0 },
+      handRight: { rotation: { x: 0, y: 0, z: 0 }, height: 0 },
+      head: { rotation: { x: 0, y: 0, z: 0 }, height: 0 },
+      upperTorso: { rotation: { x: 0, y: 0, z: 0 }, height: 0 },
+      lowerTorso: { rotation: { x: 0, y: 0, z: 0 }, height: 0 }
     };
 
     return {
-      ...defaultLimbs,
-      ...position.limbs
+      height: position.height || 0,
+      limbs: {
+        ...defaultLimbs,
+        ...position.limbs
+      }
     };
   };
 

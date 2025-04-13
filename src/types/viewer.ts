@@ -9,6 +9,7 @@ export interface StoredLimbPositions {
       y: number;
       z: number;
     };
+    height: number;
   };
 }
 
@@ -18,6 +19,7 @@ export interface InteractiveLimbProps {
   position: [number, number, number];
   groupRef: React.RefObject<THREE.Group | null>;
   limbId: LimbId;
+  geometryType?: 'cylinder' | 'box';
 }
 
 // Add type for rotation axes
@@ -44,7 +46,7 @@ export const LIMB_CONSTRAINTS: Record<LimbId, LimbConstraints> = {
   },
   lowerArmLeft: {
     rotation: {
-      x: [0, Math.PI / 2],
+      x: [-Math.PI / 2, 0],
       y: [-Math.PI / 4, Math.PI / 4],
       z: [-Math.PI / 4, Math.PI / 4],
     },
@@ -58,7 +60,7 @@ export const LIMB_CONSTRAINTS: Record<LimbId, LimbConstraints> = {
   },
   lowerArmRight: {
     rotation: {
-      x: [0, Math.PI / 2],
+      x: [-Math.PI / 2, 0],
       y: [-Math.PI / 4, Math.PI / 4],
       z: [-Math.PI / 4, Math.PI / 4],
     },
@@ -107,9 +109,23 @@ export const LIMB_CONSTRAINTS: Record<LimbId, LimbConstraints> = {
   },
   head: {
     rotation: {
-      x: [-Math.PI / 4, Math.PI / 4], // Limited up/down movement
-      y: [-Math.PI / 2, Math.PI / 2], // Full left/right rotation
-      z: [-Math.PI / 4, Math.PI / 4], // Limited tilt
+      x: [-Math.PI / 4, Math.PI / 4],
+      y: [-Math.PI / 2, Math.PI / 2],
+      z: [-Math.PI / 4, Math.PI / 4],
+    },
+  },
+  handLeft: {
+    rotation: {
+      x: [-Math.PI / 4, Math.PI / 4],
+      y: [0, 0],
+      z: [0, 0],
+    },
+  },
+  handRight: {
+    rotation: {
+      x: [-Math.PI / 4, Math.PI / 4],
+      y: [0, 0],
+      z: [0, 0],
     },
   },
 };
@@ -160,6 +176,14 @@ export const DEFAULT_POSITIONS: Record<LimbId, LimbState> = {
     position: new THREE.Vector3(0, 1.8, 0),
     rotation: new THREE.Euler(0, 0, 0),
   },
+  handLeft: {
+    position: new THREE.Vector3(-0.4, 0.6, 0),
+    rotation: new THREE.Euler(0, 0, 0),
+  },
+  handRight: {
+    position: new THREE.Vector3(0.4, 0.6, 0),
+    rotation: new THREE.Euler(0, 0, 0),
+  },
 };
 
 export interface CustomSceneProps {
@@ -191,7 +215,9 @@ export type LimbId =
   | "lowerLegRight"
   | "upperTorso"
   | "lowerTorso"
-  | "head";
+  | "head"
+  | "handLeft"
+  | "handRight";
 
 // Add type for constraints
 export interface LimbConstraints {
