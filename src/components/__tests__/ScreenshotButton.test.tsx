@@ -13,16 +13,18 @@ describe('ScreenshotButton', () => {
     (usePositions as jest.Mock).mockReturnValue({
       addPosition: mockAddPosition
     });
+    mockOnCapture.mockClear();
+    mockAddPosition.mockClear();
   });
 
-  it('renders the camera button', () => {
-    render(<ScreenshotButton onCapture={mockOnCapture} />);
-    expect(screen.getByTitle('Take screenshot of current position')).toBeInTheDocument();
+  it('renders the button', () => {
+    render(<ScreenshotButton onCapture={mockOnCapture} currentHeight={1.5} />);
+    expect(screen.getByText('Save Position')).toBeInTheDocument();
   });
 
   it('calls onCapture and addPosition when clicked', () => {
     const mockLimbs = {
-      upperArmLeft: { rotation: { x: 0, y: 0, z: 0 } },
+      upperArmLeft: { rotation: { x: 0, y: 0, z: 0 }, height: 1.5 },
       upperArmRight: { rotation: { x: 0, y: 0, z: 0 } },
       lowerArmLeft: { rotation: { x: 0, y: 0, z: 0 } },
       lowerArmRight: { rotation: { x: 0, y: 0, z: 0 } },
@@ -34,11 +36,11 @@ describe('ScreenshotButton', () => {
 
     mockOnCapture.mockReturnValue(mockLimbs);
 
-    render(<ScreenshotButton onCapture={mockOnCapture} />);
+    render(<ScreenshotButton onCapture={mockOnCapture} currentHeight={1.5} />);
     
-    fireEvent.click(screen.getByTitle('Take screenshot of current position'));
+    fireEvent.click(screen.getByText('Save Position'));
     
     expect(mockOnCapture).toHaveBeenCalled();
-    expect(mockAddPosition).toHaveBeenCalledWith(mockLimbs);
+    expect(mockAddPosition).toHaveBeenCalledWith(mockLimbs, 1.5);
   });
 }); 

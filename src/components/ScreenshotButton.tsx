@@ -1,12 +1,19 @@
 import { Position } from '../types/positions';
+import { usePositions } from '../hooks/usePositions';
 
 interface ScreenshotButtonProps {
   onCapture: () => Position['limbs'] | void;
+  currentHeight: number;
 }
 
-export function ScreenshotButton({ onCapture }: ScreenshotButtonProps) {
+export function ScreenshotButton({ onCapture, currentHeight }: ScreenshotButtonProps) {
+  const { addPosition } = usePositions();
+
   const handleClick = () => {
-    onCapture();
+    const limbs = onCapture();
+    if (limbs) {
+      addPosition(limbs, currentHeight);
+    }
   };
 
   return (

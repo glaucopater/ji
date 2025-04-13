@@ -631,6 +631,7 @@ export function Scene({ children }: CustomSceneProps) {
               </button>
               <ScreenshotButton
                 onCapture={() => handleCapture()}
+                currentHeight={currentHeight}
               />
 
               {/* Height display */}
