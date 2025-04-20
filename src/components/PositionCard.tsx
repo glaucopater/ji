@@ -1,12 +1,15 @@
-import { Position } from '../types/positions';
+import { ViewerPosition } from '../types/positions';
+import { usePositions } from '../hooks/usePositions';
 import './PositionCard.css';
 
 interface PositionCardProps {
-  position: Position;
+  position: ViewerPosition;
   onClick: () => void;
+  onDelete?: () => void;
 }
 
-export function PositionCard({ position, onClick }: PositionCardProps) {
+export function PositionCard({ position, onClick, onDelete }: PositionCardProps) {
+  const { deletePosition } = usePositions();
   const date = new Date(position.timestamp);
   const formattedDate = date.toLocaleDateString('en-US', {
     year: 'numeric',
@@ -16,35 +19,29 @@ export function PositionCard({ position, onClick }: PositionCardProps) {
     minute: '2-digit'
   });
 
-  return (
-    <div
-      onClick={onClick}
-      className="position-card"
-      style={{
-        background: 'white',
-        padding: '10px',
-        borderRadius: '8px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-        cursor: 'pointer',
-        transition: 'transform 0.2s',
-        width: '100%',
-        marginBottom: '15px'
-      }}
-    >
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent triggering the card click
+    deletePosition(position.id, 'viewer');
+    onDelete?.(); // Call onDelete callback if provided
+  };
 
-      <div style={{
-        fontFamily: 'monospace',
-        fontSize: '0.9rem',
-        marginBottom: '5px'
-      }}>
-        {position.name}
+  return (
+    <div className="position-card">
+      <div className="position-content" onClick={onClick}>
+        <div className="position-name">
+          {position.name}
+        </div>
+        <div className="position-date">
+          {formattedDate}
+        </div>
       </div>
-      <div style={{
-        fontSize: '0.7rem',
-        color: '#666'
-      }}>
-        {formattedDate}
-      </div>
+      <button 
+        className="delete-button"
+        onClick={handleDelete}
+        title="Delete position"
+      >
+        ×
+      </button>
     </div>
   );
 } 

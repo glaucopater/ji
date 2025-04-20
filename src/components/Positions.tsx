@@ -1,31 +1,37 @@
-import  { useEffect } from 'react';
-import { Position } from '../types/positions';
+import { useEffect } from 'react';
+import { ViewerPosition } from '../types/positions';
 import { usePositions } from '../hooks/usePositions';
 import { PositionCard } from './PositionCard';
 
 interface PositionsProps {
-  onPositionSelect: (position: Position) => void;
+  onPositionSelect: (position: ViewerPosition) => void;
 }
 
 export function Positions({ onPositionSelect }: PositionsProps) {
-  const { positions, refreshPositions } = usePositions();
+  const { viewerPositions, refreshPositions } = usePositions();
   
   // Refresh positions when component mounts
   useEffect(() => {
     console.log('Positions component mounted, refreshing positions');
     refreshPositions();
   }, [refreshPositions]);
+
+  const handleDelete = () => {
+    console.log('Position deleted, refreshing positions');
+    refreshPositions();
+  };
   
   return (
     <div className="positions">
-      {positions.length === 0 ? (
+      {viewerPositions.length === 0 ? (
         <p>No saved positions yet. Create one by adjusting limbs and clicking "Save Position" button.</p>
       ) : (
-        positions.map(position => (
+        viewerPositions.map(position => (
           <PositionCard 
             key={position.id} 
             position={position} 
-            onClick={() => onPositionSelect(position)} 
+            onClick={() => onPositionSelect(position)}
+            onDelete={handleDelete}
           />
         ))
       )}

@@ -5,10 +5,48 @@ import { createDetector, SupportedModels, Keypoint, Pose, MoveNetModelConfig } f
 // Import backends
 import '@tensorflow/tfjs-backend-webgl';
 import '@tensorflow/tfjs-backend-webgpu';
+import { usePositions } from '../hooks/usePositions';
+import { ViewerPosition } from '../types/positions';
+import { LimbId } from '../types/viewer';
 
 interface PoseRecord {
   timestamp: number;
   keypoints: Keypoint[];
+}
+
+// Add mapping for keypoint pairs to limb rotations
+const KEYPOINT_TO_LIMB_MAPPING = {
+  upperArmLeft: ['left_shoulder', 'left_elbow'],
+  lowerArmLeft: ['left_elbow', 'left_wrist'],
+  upperArmRight: ['right_shoulder', 'right_elbow'],
+  lowerArmRight: ['right_elbow', 'right_wrist'],
+  upperLegLeft: ['left_hip', 'left_knee'],
+  lowerLegLeft: ['left_knee', 'left_ankle'],
+  upperLegRight: ['right_hip', 'right_knee'],
+  lowerLegRight: ['right_knee', 'right_ankle'],
+  upperTorso: ['left_shoulder', 'right_shoulder'],
+  lowerTorso: ['left_hip', 'right_hip']
+} as const;
+
+function calculateRotationFromKeypoints(point1: Keypoint, point2: Keypoint): { x: number; y: number; z: number } {
+  if (!point1?.score || !point2?.score || point1.score < 0.3 || point2.score < 0.3) {
+    return { x: 0, y: 0, z: 0 };
+  }
+
+  // Calculate angles based on the vector between points
+  const dx = point2.x - point1.x;
+  const dy = point2.y - point1.y;
+  
+  // Calculate rotation around Z axis (in the camera plane)
+  const zRotation = Math.atan2(dy, dx);
+  
+  // For now, we'll use simplified rotations
+  // In a more advanced version, we could use the depth estimation
+  return {
+    x: 0, // We don't have depth information yet
+    y: 0, // We don't have side view yet
+    z: zRotation
+  };
 }
 
 export function PoseTracker() {
@@ -17,23 +55,37 @@ export function PoseTracker() {
   const [detector, setDetector] = useState<any>(null);
   const [isWebcamActive, setIsWebcamActive] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const detectionLoopRef = useRef<number>();
-  const [currentPose, setCurrentPose] = useState<Pose | null>(null);
+  
+  const [, setCurrentPose] = useState<Pose | null>(null);
   const [poseHistory, setPoseHistory] = useState<PoseRecord[]>([]);
   const [selectedPosition, setSelectedPosition] = useState<PoseRecord | null>(null);
   const lastRecordTimeRef = useRef<number>(0);
-  const [recordingInterval, setRecordingInterval] = useState<number>(5000); // 5 seconds default
+  const [recordingInterval, setRecordingInterval] = useState<number>(5000);
+  const { addViewerPosition, addPosePosition, posePositions, deletePosition } = usePositions();
+  const [translatedPosition, setTranslatedPosition] = useState<ViewerPosition | null>(null);
+  const [isTranslating, setIsTranslating] = useState(false);
 
+  // Initialize pose history from stored positions
+  useEffect(() => {
+    if (posePositions.length > 0) {
+      setPoseHistory(posePositions.map(pose => ({
+        timestamp: pose.timestamp,
+        keypoints: pose.keypoints
+      })));
+    }
+  }, [posePositions]);
+
+  // Initialize detector separately from camera
   useEffect(() => {
     async function initializePoseDetection() {
+      if (detector) return; // Skip if already initialized
+      
       try {
         setIsLoading(true);
-        
-        // Initialize TensorFlow.js
         await tf.ready();
         
-        // Try to use WebGL backend
         try {
           await tf.setBackend('webgl');
         } catch (err) {
@@ -52,8 +104,8 @@ export function PoseTracker() {
           minPoseScore: 0.25
         };
         
-        const detector = await createDetector(SupportedModels.MoveNet, modelConfig);
-        setDetector(detector);
+        const newDetector = await createDetector(SupportedModels.MoveNet, modelConfig);
+        setDetector(newDetector);
         setError(null);
       } catch (err) {
         setError('Failed to initialize pose detection. Please make sure your browser supports WebGL or WebGPU.');
@@ -66,10 +118,9 @@ export function PoseTracker() {
     initializePoseDetection();
 
     return () => {
-      // Cleanup TensorFlow resources
       tf.disposeVariables();
     };
-  }, []);
+  }, [detector]);
 
   const startWebcam = useCallback(async () => {
     if (!videoRef.current) return;
@@ -129,13 +180,13 @@ export function PoseTracker() {
         return;
       }
 
-      isDetecting = true;
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
-
       try {
+        isDetecting = true;
+        const video = videoRef.current;
+        const canvas = canvasRef.current;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
         // Make sure the video is ready and has valid dimensions
         if (video.readyState < 2 || video.videoWidth === 0 || video.videoHeight === 0) {
           detectionLoopRef.current = requestAnimationFrame(detectPose);
@@ -149,26 +200,27 @@ export function PoseTracker() {
         // Draw the video frame first
         ctx.drawImage(video, 0, 0);
 
-        // Detect poses
         const poses = await detector.estimatePoses(video, {
           flipHorizontal: false
         });
 
         if (poses.length > 0) {
-          const pose = poses[0]; // Get the first detected pose
+          const pose = poses[0];
           setCurrentPose(pose);
 
           // Record pose based on recording interval
           const now = Date.now();
           if (now - lastRecordTimeRef.current >= recordingInterval) {
-            setPoseHistory(prev => [...prev, {
+            const newPose = {
               timestamp: now,
               keypoints: pose.keypoints
-            }]);
+            };
+            setPoseHistory(prev => [newPose, ...prev]);
+            addPosePosition(pose.keypoints);
             lastRecordTimeRef.current = now;
           }
 
-          // Draw the poses
+          // Draw keypoints and connections
           pose.keypoints.forEach((keypoint: Keypoint) => {
             if (keypoint.score && keypoint.score > 0.3) {
               ctx.beginPath();
@@ -178,7 +230,7 @@ export function PoseTracker() {
             }
           });
 
-          // Draw connections between keypoints
+          // Draw connections
           const connections = [
             ['nose', 'left_eye'], ['nose', 'right_eye'],
             ['left_eye', 'left_ear'], ['right_eye', 'right_ear'],
@@ -230,14 +282,26 @@ export function PoseTracker() {
   }, []);
 
   const clearHistory = useCallback(() => {
+    // Clear local state
     setPoseHistory([]);
     setSelectedPosition(null);
     lastRecordTimeRef.current = 0;
-  }, []);
+
+    // Clear all pose positions from storage
+    posePositions.forEach(pose => {
+      deletePosition(pose.id, 'pose');
+    });
+  }, [posePositions, deletePosition]);
 
   // Function to format timestamp
-  const formatTime = (timestamp: number) => {
-    return new Date(timestamp).toLocaleTimeString();
+  const formatTime = (timestamp: string | number) => {
+    // Handle both string and number timestamps
+    const date = typeof timestamp === 'string' ? new Date(timestamp) : new Date(Number(timestamp));
+    if (isNaN(date.getTime())) {
+      console.error('Invalid timestamp:', timestamp);
+      return 'Invalid Date';
+    }
+    return date.toLocaleTimeString();
   };
 
   const renderPoseDetails = (keypoints: Keypoint[]) => (
@@ -250,6 +314,63 @@ export function PoseTracker() {
           </div>
         )
       ))}
+    </div>
+  );
+
+  const translateToViewerPosition = (record: PoseRecord) => {
+    setIsTranslating(true);
+    const limbs: ViewerPosition['limbs'] = {} as ViewerPosition['limbs'];
+    
+    // Process each limb mapping
+    Object.entries(KEYPOINT_TO_LIMB_MAPPING).forEach(([limbId, [startPoint, endPoint]]) => {
+      const point1 = record.keypoints.find(kp => kp.name === startPoint);
+      const point2 = record.keypoints.find(kp => kp.name === endPoint);
+      
+      if (point1?.score && point2?.score && point1.score > 0.3 && point2.score > 0.3) {
+        const rotation = calculateRotationFromKeypoints(point1, point2);
+        limbs[limbId as LimbId] = {
+          rotation,
+          height: 0.15 // Use the default height
+        };
+      }
+    });
+
+    // Create and add the new position
+    const newPosition = addViewerPosition(limbs, 0.15);
+    setTranslatedPosition(newPosition);
+    
+    // Add animation effect
+    setTimeout(() => {
+      setIsTranslating(false);
+    }, 1000);
+    
+    return newPosition;
+  };
+
+  const renderPoseHistory = () => (
+    <div className="pose-history">
+      {[...poseHistory].sort((a, b) => b.timestamp - a.timestamp).map((record, index) => (
+        <div key={index} className={`history-item ${selectedPosition === record ? 'selected' : ''}`}>
+          <button
+            onClick={() => selectPosition(record)}
+            className="history-select-btn"
+          >
+            <span className="history-time">{formatTime(record.timestamp)}</span>
+            <span className="history-count">Position {index + 1}</span>
+          </button>
+          <button
+            onClick={() => translateToViewerPosition(record)}
+            className="translate-btn"
+          >
+            Translate to Viewer Position
+          </button>
+        </div>
+      ))}
+      {poseHistory.length === 0 && (
+        <div className="no-data-message">
+          No positions recorded yet.
+        </div>
+      )}
     </div>
   );
 
@@ -285,8 +406,9 @@ export function PoseTracker() {
         <button 
           onClick={toggleCamera}
           className={`camera-toggle ${isWebcamActive ? 'active' : ''}`}
+          disabled={isLoading}
         >
-          {isWebcamActive ? 'Turn Off Camera' : 'Turn On Camera'}
+          {isWebcamActive ? 'Stop Camera' : 'Start Camera'}
         </button>
         <div className="interval-control">
           <label htmlFor="interval">Record every:</label>
@@ -309,63 +431,79 @@ export function PoseTracker() {
           </button>
         )}
       </div>
+
       <div className="tracking-container">
+        {/* Camera container with loading state */}
         <div className="camera-container">
-          <video
-            ref={videoRef}
-            playsInline
-            style={{ display: 'none' }}
-          />
-          <canvas
-            ref={canvasRef}
-            style={{
-              maxWidth: '100%',
-              maxHeight: '60vh',
-              backgroundColor: '#000'
-            }}
-          />
+          {isLoading ? (
+            <div className="loading-message">Initializing camera...</div>
+          ) : (
+            <>
+              <video
+                ref={videoRef}
+                playsInline
+                width="640"
+                height="480"
+                style={{ display: 'none' }}
+              />
+              <canvas
+                ref={canvasRef}
+                width="640"
+                height="480"
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '60vh',
+                  backgroundColor: '#000'
+                }}
+              />
+            </>
+          )}
         </div>
+
+        {/* Tracking panels that should render immediately */}
         <div className="tracking-panels">
-          <div className="pose-details">
-            <h3>Current Pose Details</h3>
-            {currentPose && renderPoseDetails(currentPose.keypoints)}
-            {!currentPose && !isWebcamActive && (
-              <div className="no-data-message">
-                No pose data available. Start camera or select a recorded position.
-              </div>
-            )}
-          </div>
           <div className="pose-history-panel">
             <h3>Recorded Positions ({poseHistory.length})</h3>
-            <div className="pose-history">
-              {poseHistory.map((record, index) => (
-                <button
-                  key={index}
-                  className={`history-item ${selectedPosition === record ? 'selected' : ''}`}
-                  onClick={() => selectPosition(record)}
-                >
-                  <span className="history-time">{formatTime(record.timestamp)}</span>
-                  <span className="history-count">Position {index + 1}</span>
-                </button>
-              ))}
-              {poseHistory.length === 0 && (
-                <div className="no-data-message">
-                  No positions recorded yet.
-                </div>
-              )}
-            </div>
+            {renderPoseHistory()}
           </div>
           {selectedPosition && (
             <div className="selected-position-details">
               <h3>Selected Position Details</h3>
               <div className="selected-position-time">
-                Recorded at: {formatTime(selectedPosition.timestamp)}
+                Recorded at: {formatTime(selectedPosition.timestamp.toString())}
               </div>
               {renderPoseDetails(selectedPosition.keypoints)}
             </div>
           )}
         </div>
       </div>
+      
+      {/* Translation details panel */}
+      {translatedPosition && (
+        <div className={`translation-panel ${isTranslating ? 'translating' : ''}`}>
+          <h3>Last Translated Position</h3>
+          <div className="translation-details">
+            <div className="translation-meta">
+              <span>Name: {translatedPosition.name}</span>
+              <span>Time: {formatTime(translatedPosition.timestamp)}</span>
+              <span>Height: {translatedPosition.height.toFixed(2)} units</span>
+            </div>
+            <div className="translation-limbs">
+              <h4>Limb Rotations</h4>
+              {Object.entries(translatedPosition.limbs).map(([limbId, data]) => (
+                <div key={limbId} className="limb-rotation">
+                  <span className="limb-name">{limbId}</span>
+                  <span className="rotation-values">
+                    X: {data.rotation.x.toFixed(2)},
+                    Y: {data.rotation.y.toFixed(2)},
+                    Z: {data.rotation.z.toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 } 
