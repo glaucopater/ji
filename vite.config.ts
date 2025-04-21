@@ -14,4 +14,20 @@ export default defineConfig({
     },
   },
   plugins: [react()],
+  optimizeDeps: {
+    exclude: [
+      '@tensorflow/tfjs-core',
+      '@tensorflow/tfjs-converter',
+      '@tensorflow/tfjs-backend-webgl',
+      '@tensorflow/tfjs-backend-cpu',
+      '@tensorflow-models/pose-detection'
+    ]
+  },
+  build: {
+    rollupOptions: {
+      external: [
+        '@tensorflow/tfjs-backend-webgpu'
+      ]
+    }
+  }
 });
