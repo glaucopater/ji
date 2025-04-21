@@ -215,8 +215,14 @@ export function PoseTracker() {
               timestamp: now,
               keypoints: pose.keypoints
             };
+            
+            // Add to local history
             setPoseHistory(prev => [newPose, ...prev]);
+            
+            // Add to storage
             addPosePosition(pose.keypoints);
+            
+            // Update last record time
             lastRecordTimeRef.current = now;
           }
 
@@ -274,7 +280,7 @@ export function PoseTracker() {
         cancelAnimationFrame(detectionLoopRef.current);
       }
     };
-  }, [detector, isWebcamActive, recordingInterval]);
+  }, [detector, isWebcamActive, recordingInterval, addPosePosition]);
 
   const selectPosition = useCallback((record: PoseRecord) => {
     setSelectedPosition(record);

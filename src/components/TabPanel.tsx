@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import { Position } from '../types/positions';
+import { ViewerPosition } from '../types/positions';
 import { usePositions } from '../hooks/usePositions';
 
 export interface TabPanelProps {
   children: React.ReactNode[];
-  onPositionSelect?: (position: Position) => void;
+  onPositionSelect?: (position: ViewerPosition) => void;
 }
 
 export function TabPanel({ children }: TabPanelProps) {

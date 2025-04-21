@@ -3,7 +3,9 @@ import { PositionLibrary } from '../PositionLibrary';
 import { usePositions } from '../../hooks/usePositions';
 
 // Mock the usePositions hook
-jest.mock('../../hooks/usePositions');
+jest.mock('../../hooks/usePositions', () => ({
+  usePositions: jest.fn()
+}));
 
 describe('PositionLibrary', () => {
   const mockPositions = [
@@ -12,14 +14,14 @@ describe('PositionLibrary', () => {
       name: 'Position 1',
       timestamp: new Date().toISOString(),
       limbs: {
-        upperArmLeft: { rotation: { x: 0, y: 0, z: 0 } },
-        upperArmRight: { rotation: { x: 0, y: 0, z: 0 } },
-        lowerArmLeft: { rotation: { x: 0, y: 0, z: 0 } },
-        lowerArmRight: { rotation: { x: 0, y: 0, z: 0 } },
-        upperLegLeft: { rotation: { x: 0, y: 0, z: 0 } },
-        upperLegRight: { rotation: { x: 0, y: 0, z: 0 } },
-        lowerLegLeft: { rotation: { x: 0, y: 0, z: 0 } },
-        lowerLegRight: { rotation: { x: 0, y: 0, z: 0 } }
+        upperArmLeft: { rotation: { x: 0, y: 0, z: 0 }, height: 1.5 },
+        upperArmRight: { rotation: { x: 0, y: 0, z: 0 }, height: 1.5 },
+        lowerArmLeft: { rotation: { x: 0, y: 0, z: 0 }, height: 1.5 },
+        lowerArmRight: { rotation: { x: 0, y: 0, z: 0 }, height: 1.5 },
+        upperLegLeft: { rotation: { x: 0, y: 0, z: 0 }, height: 1.5 },
+        upperLegRight: { rotation: { x: 0, y: 0, z: 0 }, height: 1.5 },
+        lowerLegLeft: { rotation: { x: 0, y: 0, z: 0 }, height: 1.5 },
+        lowerLegRight: { rotation: { x: 0, y: 0, z: 0 }, height: 1.5 }
       }
     }
   ];
@@ -27,10 +29,10 @@ describe('PositionLibrary', () => {
   const mockOnPositionSelect = jest.fn();
 
   beforeEach(() => {
-    (usePositions as jest.Mock).mockReturnValue({
-      positions: mockPositions,
+    (usePositions as jest.Mock).mockImplementation(() => ({
+      viewerPositions: mockPositions,
       deletePosition: jest.fn()
-    });
+    }));
   });
 
   it('renders position cards', () => {
@@ -42,7 +44,9 @@ describe('PositionLibrary', () => {
   it('calls onPositionSelect when a position card is clicked', () => {
     render(<PositionLibrary onPositionSelect={mockOnPositionSelect} />);
     
-    fireEvent.click(screen.getByText('Position 1'));
+    const positionCard = screen.getByText('Position 1');
+    fireEvent.click(positionCard);
+    
     expect(mockOnPositionSelect).toHaveBeenCalledWith(mockPositions[0]);
   });
 }); 

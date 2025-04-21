@@ -18,7 +18,7 @@ import {
   StoredLimbPositions,
 } from "../types/viewer";
 import { ScreenshotButton } from './ScreenshotButton';
-import { Position } from '../types/positions';
+import { ViewerPosition } from '../types/positions';
 import { usePositions } from '../hooks/usePositions';
 import { TabPanel } from './TabPanel';
 import { Positions } from './Positions';
@@ -256,7 +256,7 @@ export function Scene({ children }: CustomSceneProps) {
   });
 
   const [, setSavedTechniques] = useState<any[]>([]);
-  const { addPosition } = usePositions();
+  const { addViewerPosition } = usePositions();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   useEffect(() => {
@@ -304,7 +304,7 @@ export function Scene({ children }: CustomSceneProps) {
     window.__modelMove?.("y", -currentHeight);
   }, [currentHeight]);
 
-  const handlePositionSelect = (position: Position) => {
+  const handlePositionSelect = (position: ViewerPosition) => {
     console.log('Selected position:', position);
 
     // First reset to default positions
@@ -322,7 +322,7 @@ export function Scene({ children }: CustomSceneProps) {
     // Then apply the selected position after a short delay
     setTimeout(() => {
       // Apply the position to the model
-      Object.entries(position.limbs).forEach(([id, data]) => {
+      Object.entries(position.limbs).forEach(([id, data]: [string, { rotation: { x: number; y: number; z: number }; height: number }]) => {
         const limbRef = limbsRef.current[id as LimbId];
         if (limbRef?.current) {
           const rotation = data.rotation;
@@ -332,7 +332,7 @@ export function Scene({ children }: CustomSceneProps) {
 
       // Save to localStorage
       const positions = {} as StoredLimbPositions;
-      Object.entries(position.limbs).forEach(([id, data]) => {
+      Object.entries(position.limbs).forEach(([id, data]: [string, { rotation: { x: number; y: number; z: number }; height: number }]) => {
         positions[id as LimbId] = {
           rotation: data.rotation,
           height: data.height || 0
@@ -394,7 +394,7 @@ export function Scene({ children }: CustomSceneProps) {
 
   const handleCapture = () => {
     // Initialize with default positions
-    const currentPositions: Position['limbs'] = {
+    const currentPositions: ViewerPosition['limbs'] = {
       upperArmLeft: { rotation: { x: 0, y: 0, z: 0 }, height: currentHeight },
       lowerArmLeft: { rotation: { x: 0, y: 0, z: 0 }, height: currentHeight },
       upperArmRight: { rotation: { x: 0, y: 0, z: 0 }, height: currentHeight },
@@ -424,7 +424,7 @@ export function Scene({ children }: CustomSceneProps) {
       }
     });
 
-    const newPosition = addPosition(currentPositions, currentHeight);
+    const newPosition = addViewerPosition(currentPositions, currentHeight);
     setCurrentHeight(newPosition.height);
     setRefreshTrigger(prev => prev + 1); // Force refresh of positions list
   };

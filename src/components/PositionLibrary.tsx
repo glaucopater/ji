@@ -1,13 +1,13 @@
 import { usePositions } from '../hooks/usePositions';
-import { Position } from '../types/positions';
+import { ViewerPosition } from '../types/positions';
 import { PositionCard } from './PositionCard';
 
 interface PositionLibraryProps {
-  onPositionSelect: (position: Position) => void;
+  onPositionSelect: (position: ViewerPosition) => void;
 }
 
 export function PositionLibrary({ onPositionSelect }: PositionLibraryProps) {
-  const { positions } = usePositions();
+  const { viewerPositions } = usePositions();
 
   return (
     <div style={{
@@ -18,7 +18,7 @@ export function PositionLibrary({ onPositionSelect }: PositionLibraryProps) {
       maxHeight: '100%',
       overflowY: 'auto'
     }}>
-      {positions.map((position) => (
+      {viewerPositions.map((position: ViewerPosition) => (
         <PositionCard
           key={position.id}
           position={position}
