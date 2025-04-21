@@ -1,6 +1,46 @@
-# JI
+# Judo Interactive
 
-A React-based 3D animation system for visualizing judo techniques using Three.js and React Three Fiber.
+A web-based 3D judo technique visualization tool.
+
+![JI](public/logo.png)
+
+
+## Features
+
+### Pose Recording System
+The application includes a real-time pose detection and recording system that allows users to:
+- Capture poses using their webcam
+- Record poses at configurable intervals
+- Store and manage pose history
+- Translate poses to 3D viewer positions
+
+#### How Pose Recording Works
+1. **Pose Detection**
+   - Uses TensorFlow.js and MoveNet model for real-time pose detection
+   - Detects 17 keypoints on the human body
+   - Visualizes detected poses with keypoints and connections
+
+2. **Pose Recording**
+   - Records poses at user-defined intervals (default: 5 seconds)
+   - Stores poses in two ways:
+     - Local state for immediate display and interaction
+     - Persistent storage for long-term access
+   - Each recorded pose includes:
+     - Timestamp
+     - Keypoint positions
+     - Confidence scores
+
+3. **Pose Management**
+   - View recorded poses in the "Recorded Positions" section
+   - Select poses to view detailed information
+   - Clear pose history when needed
+   - Translate poses to 3D viewer positions
+
+4. **Pose Translation**
+   - Converts 2D pose keypoints to 3D limb rotations
+   - Maps keypoint pairs to specific limbs
+   - Calculates rotation angles for each limb
+   - Applies rotations to the 3D model
 
 ## Installation
 
