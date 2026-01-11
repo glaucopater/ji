@@ -21,7 +21,7 @@ export function PositionCard({ position, onClick, onDelete }: PositionCardProps)
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent triggering the card click
-    deletePosition(position.id, 'viewer');
+    deletePosition(position.id);
     onDelete?.(); // Call onDelete callback if provided
   };
 

@@ -17,7 +17,10 @@ Key Principles
 - When I tell you that the feature is working fine, than: document it in the readme.md, add unit tests
 - If I tell you "loop" or "rabbit hole" it means that you are not doing any progress, change strategy
 - Periodically check if any file is too big
-  
+
+System Convention
+- try to infer the system where you are running, if on Windows try bash command otherwise switch to powershell
+- store the allowlist of the command I allowed you to run
 
 Naming Conventions
 - Use lowercase with dashes for directories (e.g., components/auth-wizard).

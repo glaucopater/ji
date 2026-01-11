@@ -1,24 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { ViewerPosition, PosePosition, ViewerLibrary, PoseLibrary } from '../types/positions';
-import { Keypoint } from '@tensorflow-models/pose-detection';
+import { ViewerPosition, ViewerLibrary } from '../types/positions';
 
 const VIEWER_STORAGE_KEY = 'positionLibrary';
-const POSE_STORAGE_KEY = 'poseDetectionLibrary';
 
 const DEFAULT_VIEWER_LIBRARY: ViewerLibrary = {
   positions: [],
   lastPositionNumber: 0
 };
 
-const DEFAULT_POSE_LIBRARY: PoseLibrary = {
-  positions: [],
-  lastPositionNumber: 0
-};
-
 export function usePositions() {
   const [viewerLibrary, setViewerLibrary] = useState<ViewerLibrary>(DEFAULT_VIEWER_LIBRARY);
-  const [poseLibrary, setPoseLibrary] = useState<PoseLibrary>(DEFAULT_POSE_LIBRARY);
 
   // Load positions from localStorage on mount
   const loadPositionsFromStorage = useCallback(() => {
@@ -38,24 +30,9 @@ export function usePositions() {
         }
       }
 
-      // Load pose positions
-      const savedPoseLibrary = localStorage.getItem(POSE_STORAGE_KEY);
-      console.log('Loading pose positions from localStorage:', savedPoseLibrary?.length ?? 0);
-      
-      if (!savedPoseLibrary) {
-        console.log('No saved pose library found, using default');
-        localStorage.setItem(POSE_STORAGE_KEY, JSON.stringify(DEFAULT_POSE_LIBRARY));
-        setPoseLibrary(DEFAULT_POSE_LIBRARY);
-      } else {
-        const poseData = JSON.parse(savedPoseLibrary);
-        if (poseData.positions && Array.isArray(poseData.positions)) {
-          setPoseLibrary(poseData);
-        }
-      }
     } catch (error) {
       console.error('Error loading positions:', error);
       setViewerLibrary(DEFAULT_VIEWER_LIBRARY);
-      setPoseLibrary(DEFAULT_POSE_LIBRARY);
     }
   }, []);
 
@@ -98,55 +75,18 @@ export function usePositions() {
     return newPosition;
   };
 
-  const addPosePosition = (keypoints: Keypoint[]) => {
-    console.log('Adding new pose position:', keypoints);
-    
-    const newPosition: PosePosition = {
-      id: uuidv4(),
-      name: `Pose ${poseLibrary.lastPositionNumber + 1}`,
-      timestamp: Date.now(),
-      keypoints
-    };
-
+  const deletePosition = (id: string) => {
     const updatedLibrary = {
-      positions: [newPosition, ...poseLibrary.positions].sort((a, b) => b.timestamp - a.timestamp),
-      lastPositionNumber: poseLibrary.lastPositionNumber + 1
+      ...viewerLibrary,
+      positions: viewerLibrary.positions.filter(p => p.id !== id)
     };
-
-    try {
-      localStorage.setItem(POSE_STORAGE_KEY, JSON.stringify(updatedLibrary));
-      console.log('Successfully saved pose position to localStorage:', updatedLibrary);
-      setPoseLibrary(updatedLibrary);
-    } catch (error) {
-      console.error('Error saving pose position:', error);
-    }
-
-    return newPosition;
-  };
-
-  const deletePosition = (id: string, type: 'viewer' | 'pose') => {
-    if (type === 'viewer') {
-      const updatedLibrary = {
-        ...viewerLibrary,
-        positions: viewerLibrary.positions.filter(p => p.id !== id)
-      };
-      localStorage.setItem(VIEWER_STORAGE_KEY, JSON.stringify(updatedLibrary));
-      setViewerLibrary(updatedLibrary);
-    } else {
-      const updatedLibrary = {
-        ...poseLibrary,
-        positions: poseLibrary.positions.filter(p => p.id !== id)
-      };
-      localStorage.setItem(POSE_STORAGE_KEY, JSON.stringify(updatedLibrary));
-      setPoseLibrary(updatedLibrary);
-    }
+    localStorage.setItem(VIEWER_STORAGE_KEY, JSON.stringify(updatedLibrary));
+    setViewerLibrary(updatedLibrary);
   };
 
   return {
     viewerPositions: viewerLibrary.positions,
-    posePositions: poseLibrary.positions,
     addViewerPosition,
-    addPosePosition,
     deletePosition,
     refreshPositions: loadPositionsFromStorage
   };
