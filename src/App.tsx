@@ -1,7 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, NavLink } from 'react-router-dom';
 import { Scene } from './components/Scene';
 import { TechniqueEditor } from './components/flow/TechniqueEditor';
-import { PoseTracker } from './components/PoseTracker';
 import { Settings } from './components/Settings';
 import { techniques } from './data/techniques';
 import { useState } from 'react';
@@ -85,7 +84,6 @@ function Navigation() {
     <nav className="navigation">
       <NavLink to="/" end>Viewer</NavLink>
       <NavLink to="/editor">Editor</NavLink>
-      <NavLink to="/pose-tracker">Pose Tracker</NavLink>
       <NavLink to="/settings">⚙️ Settings</NavLink>
     </nav>
   );
@@ -100,7 +98,6 @@ export function App() {
           <Routes>
             <Route path="/" element={<Viewer />} />
             <Route path="/editor" element={<TechniqueEditor />} />
-            <Route path="/pose-tracker" element={<PoseTracker />} />
             <Route path="/settings" element={<Settings />} />
           </Routes>
         </div>

@@ -3,18 +3,83 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/judo-icon.svg" />
-    <link rel="manifest" href="/manifest.json" />
+    <!-- Manifest disabled in development to prevent service worker issues -->
+    <!-- <link rel="manifest" href="/manifest.json" /> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
     <title>Judo Interactive</title>
     <script>
-      // Unregister any existing service workers that might be interfering
-      if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(registrations) {
-          for(let registration of registrations) {
-            registration.unregister();
+      // Aggressively disable service workers - must run immediately before any other scripts
+      (function() {
+        'use strict';
+        if ('serviceWorker' in navigator) {
+          // Override register BEFORE anything else can use it
+          const originalRegister = navigator.serviceWorker.register;
+          navigator.serviceWorker.register = function() {
+            console.warn('[SW] Service worker registration blocked');
+            return Promise.reject(new Error('Service workers are disabled'));
+          };
+          
+          // Immediately unregister all existing service workers
+          function unregisterAll() {
+            navigator.serviceWorker.getRegistrations().then(function(registrations) {
+              if (registrations.length === 0) return;
+              
+              console.log('[SW] Found', registrations.length, 'service worker(s) to unregister');
+              const promises = registrations.map(function(registration) {
+                return registration.unregister().then(function(success) {
+                  if (success) {
+                    console.log('[SW] Unregistered:', registration.scope);
+                  }
+                  return success;
+                });
+              });
+              
+              Promise.all(promises).then(function() {
+                // Clear all caches
+                if ('caches' in window) {
+                  return caches.keys().then(function(names) {
+                    return Promise.all(names.map(function(name) {
+                      return caches.delete(name).then(function(success) {
+                        if (success) {
+                          console.log('[SW] Cache deleted:', name);
+                        }
+                      });
+                    }));
+                  });
+                }
+              }).then(function() {
+                console.log('[SW] Cleanup complete');
+              }).catch(function(error) {
+                console.error('[SW] Cleanup error:', error);
+              });
+            }).catch(function(error) {
+              console.error('[SW] Error getting registrations:', error);
+            });
           }
-        });
-      }
+          
+          // Run immediately
+          unregisterAll();
+          
+          // Also run on page load in case registrations happen later
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', unregisterAll);
+          } else {
+            unregisterAll();
+          }
+          
+          // Handle controller changes
+          navigator.serviceWorker.addEventListener('controllerchange', function() {
+            console.log('[SW] Controller changed, reloading...');
+            window.location.reload();
+          });
+          
+          // If there's an active controller, try to unregister it
+          if (navigator.serviceWorker.controller) {
+            navigator.serviceWorker.controller.postMessage({type: 'SKIP_WAITING'});
+            setTimeout(unregisterAll, 100);
+          }
+        }
+      })();
     </script>
   </head>
 
