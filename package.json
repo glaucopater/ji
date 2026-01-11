@@ -57,6 +57,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
+    "generate-pr": "node docs/todos/generate-pr-description.js",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "preview": "vite preview",

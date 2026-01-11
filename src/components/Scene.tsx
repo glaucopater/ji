@@ -170,6 +170,545 @@ function ModelPositionController({
 
 
 
+// Component to set the scene background color or texture
+function SceneBackground({ 
+  color, 
+  imageUrl 
+}: { 
+  color?: string | THREE.Color; 
+  imageUrl?: string | null;
+}) {
+  const { scene } = useThree();
+  
+  useEffect(() => {
+    console.log('SceneBackground useEffect triggered, imageUrl:', imageUrl, 'color:', color);
+    
+    // Cleanup: dispose of previous texture if it exists
+    if (scene.background && scene.background instanceof THREE.Texture) {
+      console.log('Disposing previous background texture');
+      scene.background.dispose();
+    }
+    
+    if (imageUrl) {
+      console.log('Loading background image from:', imageUrl);
+      const loader = new THREE.TextureLoader();
+      // Set crossOrigin to allow loading from same origin
+      loader.setCrossOrigin('anonymous');
+      loader.load(
+        imageUrl,
+        (texture) => {
+          console.log('Background image loaded successfully', texture);
+          // Ensure texture is properly configured
+          texture.needsUpdate = true;
+          // Set texture format for proper display
+          texture.format = THREE.RGBAFormat;
+          scene.background = texture;
+          console.log('Background texture applied to scene');
+        },
+        (progress) => {
+          if (progress.total > 0) {
+            const percent = (progress.loaded / progress.total) * 100;
+            console.log('Loading progress:', percent + '%');
+          }
+        },
+        (error) => {
+          console.error('Error loading background image:', error);
+          console.error('Failed URL:', imageUrl);
+          console.error('Trying to verify URL accessibility...');
+          // Try to verify the URL is accessible
+          fetch(imageUrl)
+            .then(response => {
+              if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+              }
+              console.log('URL is accessible, but texture loading failed');
+            })
+            .catch(fetchError => {
+              console.error('URL is not accessible:', fetchError);
+            });
+          // Fallback to color if image fails to load
+          if (color) {
+            scene.background = typeof color === 'string' ? new THREE.Color(color) : color;
+          }
+        }
+      );
+    } else if (color) {
+      scene.background = typeof color === 'string' ? new THREE.Color(color) : color;
+    }
+    
+    // Cleanup function
+    return () => {
+      if (scene.background && scene.background instanceof THREE.Texture) {
+        scene.background.dispose();
+      }
+    };
+  }, [scene, color, imageUrl]);
+  
+  return null;
+}
+
+// Settings tab content component
+function SettingsTab({ 
+  backgroundColor, 
+  backgroundImage,
+  onBackgroundColorChange,
+  onBackgroundImageChange,
+  tatamiPerimeterColor,
+  tatamiInteriorColor,
+  tatamiBaseColor,
+  onTatamiPerimeterColorChange,
+  onTatamiInteriorColorChange,
+  onTatamiBaseColorChange
+}: { 
+  backgroundColor: string; 
+  backgroundImage: string | null;
+  onBackgroundColorChange: (color: string) => void;
+  onBackgroundImageChange: (imageUrl: string | null) => void;
+  tatamiPerimeterColor: string;
+  tatamiInteriorColor: string;
+  tatamiBaseColor: string;
+  onTatamiPerimeterColorChange: (color: string) => void;
+  onTatamiInteriorColorChange: (color: string) => void;
+  onTatamiBaseColorChange: (color: string) => void;
+}) {
+  const [tempColor, setTempColor] = useState(backgroundColor);
+  const [tempImageUrl, setTempImageUrl] = useState(backgroundImage || '');
+  const [backgroundType, setBackgroundType] = useState<'color' | 'image'>(backgroundImage ? 'image' : 'color');
+
+  const presetColors = [
+    { name: 'Light Blue', value: '#e3f2fd' },
+    { name: 'White', value: '#ffffff' },
+    { name: 'Light Gray', value: '#f0f0f0' },
+    { name: 'Off White', value: '#fafafa' },
+    { name: 'Sky Blue', value: '#87ceeb' },
+    { name: 'Black', value: '#000000' },
+  ];
+
+  const [presetImages, setPresetImages] = useState<Array<{ name: string; value: string }>>([
+    { name: 'Dojo 1', value: '/assets/images/dojo_1.png' },
+  ]);
+
+  // Dynamically discover dojo_* images by checking if they exist
+  useEffect(() => {
+    const checkImages = async () => {
+      const images: Array<{ name: string; value: string }> = [];
+      const maxDojoImages = 20; // Check up to 20 dojo images
+      
+      const checkPromises = [];
+      for (let i = 1; i <= maxDojoImages; i++) {
+        const imagePath = `/assets/images/dojo_${i}.png`;
+        checkPromises.push(
+          new Promise<{ index: number; path: string } | null>((resolve) => {
+            const img = new Image();
+            img.onload = () => resolve({ index: i, path: imagePath });
+            img.onerror = () => resolve(null);
+            img.src = imagePath;
+          })
+        );
+      }
+      
+      const results = await Promise.all(checkPromises);
+      results.forEach(result => {
+        if (result) {
+          images.push({
+            name: `Dojo ${result.index}`,
+            value: result.path
+          });
+        }
+      });
+      
+      setPresetImages(images);
+    };
+    
+    checkImages();
+  }, []);
+
+  const handleColorChange = (color: string) => {
+    setTempColor(color);
+    onBackgroundColorChange(color);
+    localStorage.setItem('sceneBackgroundColor', color);
+    if (backgroundType === 'color') {
+      onBackgroundImageChange(null);
+      localStorage.removeItem('sceneBackgroundImage');
+    }
+  };
+
+  const handleImageChange = (imageUrl: string | null) => {
+    console.log('handleImageChange called with:', imageUrl);
+    onBackgroundImageChange(imageUrl);
+    if (imageUrl) {
+      localStorage.setItem('sceneBackgroundImage', imageUrl);
+      localStorage.removeItem('sceneBackgroundColor');
+    } else {
+      localStorage.removeItem('sceneBackgroundImage');
+    }
+  };
+
+  const handleTypeChange = (type: 'color' | 'image') => {
+    setBackgroundType(type);
+    if (type === 'color') {
+      handleImageChange(null);
+      handleColorChange(backgroundColor);
+    } else {
+      onBackgroundColorChange('#e3f2fd'); // Reset to default when switching to image
+    }
+  };
+
+  return (
+    <div
+      style={{
+        padding: "15px",
+        color: "#333",
+        height: "100%",
+        overflowY: "auto"
+      }}
+    >
+          <h3 style={{ margin: "0 0 20px 0", color: "#333" }}>Settings</h3>
+          <h4 style={{ margin: "0 0 15px 0", color: "#333" }}>Background Settings</h4>
+          
+          {/* Background type selector */}
+          <div style={{ marginBottom: "15px" }}>
+            <label style={{ display: "block", marginBottom: "8px", fontSize: "14px" }}>
+              Background Type:
+            </label>
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                onClick={() => handleTypeChange('color')}
+                style={{
+                  flex: 1,
+                  padding: "8px",
+                  backgroundColor: backgroundType === 'color' ? "#4CAF50" : "#555",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  fontSize: "14px"
+                }}
+              >
+                Color
+              </button>
+              <button
+                onClick={() => handleTypeChange('image')}
+                style={{
+                  flex: 1,
+                  padding: "8px",
+                  backgroundColor: backgroundType === 'image' ? "#4CAF50" : "#555",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "4px",
+                  cursor: "pointer",
+                  fontSize: "14px"
+                }}
+              >
+                Image
+              </button>
+            </div>
+          </div>
+
+          {backgroundType === 'color' ? (
+            <>
+              {/* Preset colors */}
+              <div style={{ marginBottom: "15px" }}>
+                <label style={{ display: "block", marginBottom: "8px", fontSize: "14px" }}>
+                  Preset Colors:
+                </label>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "8px" }}>
+                  {presetColors.map((preset) => (
+                    <button
+                      key={preset.value}
+                      onClick={() => handleColorChange(preset.value)}
+                    style={{
+                      padding: "8px",
+                      backgroundColor: preset.value,
+                      border: backgroundColor === preset.value ? "3px solid #4CAF50" : "1px solid #ccc",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      color: preset.value === '#000000' ? 'white' : 'black',
+                      fontSize: "12px"
+                    }}
+                    >
+                      {preset.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom color picker */}
+              <div>
+                <label style={{ display: "block", marginBottom: "8px", fontSize: "14px" }}>
+                  Custom Color:
+                </label>
+                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                  <input
+                    type="color"
+                    value={tempColor}
+                    onChange={(e) => handleColorChange(e.target.value)}
+                    style={{
+                      width: "60px",
+                      height: "40px",
+                      border: "1px solid #ccc",
+                      borderRadius: "4px",
+                      cursor: "pointer"
+                    }}
+                  />
+                  <input
+                    type="text"
+                    value={tempColor}
+                    onChange={(e) => {
+                      const color = e.target.value;
+                      setTempColor(color);
+                      if (/^#[0-9A-F]{6}$/i.test(color)) {
+                        handleColorChange(color);
+                      }
+                    }}
+                    placeholder="#e3f2fd"
+                    style={{
+                      flex: 1,
+                      padding: "8px",
+                      borderRadius: "4px",
+                      border: "1px solid #ccc",
+                      fontSize: "14px"
+                    }}
+                  />
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Preset images dropdown */}
+              <div style={{ marginBottom: "15px" }}>
+                <label style={{ display: "block", marginBottom: "8px", fontSize: "14px", color: "#333" }}>
+                  Select Background Image:
+                </label>
+                <select
+                  value={backgroundImage || ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value) {
+                      handleImageChange(value);
+                      setTempImageUrl(value);
+                    } else {
+                      handleImageChange(null);
+                      setTempImageUrl('');
+                    }
+                  }}
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: "1px solid #ccc",
+                    fontSize: "14px",
+                    backgroundColor: "white",
+                    color: "#333",
+                    cursor: "pointer"
+                  }}
+                >
+                  <option value="">-- Select an image --</option>
+                  {presetImages.map((preset) => (
+                    <option key={preset.value} value={preset.value}>
+                      {preset.name}
+                    </option>
+                  ))}
+                </select>
+                
+                {/* Image preview */}
+                {backgroundImage && (
+                  <div style={{ marginTop: "10px" }}>
+                    <label style={{ display: "block", marginBottom: "5px", fontSize: "12px", fontWeight: "bold", color: "#333" }}>
+                      Preview:
+                    </label>
+                    <div style={{
+                      border: "1px solid #ccc",
+                      borderRadius: "4px",
+                      padding: "5px",
+                      backgroundColor: "#f5f5f5",
+                      display: "inline-block"
+                    }}>
+                      <img
+                        src={backgroundImage}
+                        alt="Background preview"
+                        style={{
+                          maxWidth: "200px",
+                          maxHeight: "150px",
+                          width: "auto",
+                          height: "auto",
+                          borderRadius: "4px",
+                          display: "block"
+                        }}
+                        onError={(e) => {
+                          console.error('Failed to load preview image:', backgroundImage);
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Remove image button */}
+              {backgroundImage && (
+                <div>
+                  <button
+                    onClick={() => {
+                      handleImageChange(null);
+                      setTempImageUrl('');
+                    }}
+                    style={{
+                      width: "100%",
+                      padding: "8px",
+                      backgroundColor: "#f44336",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      marginTop: "8px"
+                    }}
+                  >
+                    Remove Image
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+          
+          {/* Tatami Color Settings */}
+          <div style={{ marginTop: "20px", paddingTop: "20px", borderTop: "1px solid #eee" }}>
+            <h4 style={{ margin: "0 0 15px 0", color: "#333" }}>Tatami Colors</h4>
+            
+            {/* Perimeter Color */}
+            <div style={{ marginBottom: "15px" }}>
+              <label style={{ display: "block", marginBottom: "8px", fontSize: "14px" }}>
+                Perimeter Color:
+              </label>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <input
+                  type="color"
+                  value={tatamiPerimeterColor}
+                  onChange={(e) => {
+                    onTatamiPerimeterColorChange(e.target.value);
+                    localStorage.setItem('tatamiPerimeterColor', e.target.value);
+                  }}
+                  style={{
+                    width: "60px",
+                    height: "40px",
+                    border: "1px solid #ccc",
+                    borderRadius: "4px",
+                    cursor: "pointer"
+                  }}
+                />
+                <input
+                  type="text"
+                  value={tatamiPerimeterColor}
+                  onChange={(e) => {
+                    const color = e.target.value;
+                    if (/^#[0-9A-F]{6}$/i.test(color)) {
+                      onTatamiPerimeterColorChange(color);
+                      localStorage.setItem('tatamiPerimeterColor', color);
+                    }
+                  }}
+                  placeholder="#006400"
+                  style={{
+                    flex: 1,
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: "1px solid #ccc",
+                    fontSize: "14px"
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Interior Color */}
+            <div style={{ marginBottom: "15px" }}>
+              <label style={{ display: "block", marginBottom: "8px", fontSize: "14px" }}>
+                Interior Color:
+              </label>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <input
+                  type="color"
+                  value={tatamiInteriorColor}
+                  onChange={(e) => {
+                    onTatamiInteriorColorChange(e.target.value);
+                    localStorage.setItem('tatamiInteriorColor', e.target.value);
+                  }}
+                  style={{
+                    width: "60px",
+                    height: "40px",
+                    border: "1px solid #ccc",
+                    borderRadius: "4px",
+                    cursor: "pointer"
+                  }}
+                />
+                <input
+                  type="text"
+                  value={tatamiInteriorColor}
+                  onChange={(e) => {
+                    const color = e.target.value;
+                    if (/^#[0-9A-F]{6}$/i.test(color)) {
+                      onTatamiInteriorColorChange(color);
+                      localStorage.setItem('tatamiInteriorColor', color);
+                    }
+                  }}
+                  placeholder="#8B0000"
+                  style={{
+                    flex: 1,
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: "1px solid #ccc",
+                    fontSize: "14px"
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Base Color */}
+            <div style={{ marginBottom: "15px" }}>
+              <label style={{ display: "block", marginBottom: "8px", fontSize: "14px" }}>
+                Base Color:
+              </label>
+              <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                <input
+                  type="color"
+                  value={tatamiBaseColor}
+                  onChange={(e) => {
+                    onTatamiBaseColorChange(e.target.value);
+                    localStorage.setItem('tatamiBaseColor', e.target.value);
+                  }}
+                  style={{
+                    width: "60px",
+                    height: "40px",
+                    border: "1px solid #ccc",
+                    borderRadius: "4px",
+                    cursor: "pointer"
+                  }}
+                />
+                <input
+                  type="text"
+                  value={tatamiBaseColor}
+                  onChange={(e) => {
+                    const color = e.target.value;
+                    if (/^#[0-9A-F]{6}$/i.test(color)) {
+                      onTatamiBaseColorChange(color);
+                      localStorage.setItem('tatamiBaseColor', color);
+                    }
+                  }}
+                  placeholder="#2b2b2b"
+                  style={{
+                    flex: 1,
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: "1px solid #ccc",
+                    fontSize: "14px"
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+    </div>
+  );
+}
+
 // Add ScreenshotTool component at the top level
 function ScreenshotTool() {
   const { gl, scene, camera } = useThree();
@@ -221,6 +760,32 @@ export function Scene({ children }: CustomSceneProps) {
   const [currentHeight, setCurrentHeight] = useState(() => {
     const savedPosition = localStorage.getItem("humanoidPosition");
     return savedPosition ? JSON.parse(savedPosition).y : 0;
+  });
+  const [backgroundColor, setBackgroundColor] = useState(() => {
+    const savedColor = localStorage.getItem("sceneBackgroundColor");
+    return savedColor || "#e3f2fd";
+  });
+  const [backgroundImage, setBackgroundImage] = useState<string | null>(() => {
+    const saved = localStorage.getItem("sceneBackgroundImage");
+    console.log('Initial backgroundImage from localStorage:', saved);
+    return saved || null;
+  });
+
+  // Debug: log when backgroundImage changes
+  useEffect(() => {
+    console.log('backgroundImage state changed to:', backgroundImage);
+  }, [backgroundImage]);
+
+  const [tatamiPerimeterColor, setTatamiPerimeterColor] = useState(() => {
+    return localStorage.getItem("tatamiPerimeterColor") || '#006400';
+  });
+
+  const [tatamiInteriorColor, setTatamiInteriorColor] = useState(() => {
+    return localStorage.getItem("tatamiInteriorColor") || '#8B0000';
+  });
+
+  const [tatamiBaseColor, setTatamiBaseColor] = useState(() => {
+    return localStorage.getItem("tatamiBaseColor") || '#2b2b2b';
   });
 
   // Create refs for all limbs
@@ -456,10 +1021,17 @@ export function Scene({ children }: CustomSceneProps) {
         <div style={{ position: "relative", width: "100%", height: "100%" }}>
           <Canvas camera={{ position: [0, 1.5, 4], fov: 50 }}>
             <Suspense fallback={null}>
+              <SceneBackground color={backgroundColor} imageUrl={backgroundImage} />
               <ambientLight intensity={0.5} />
               <directionalLight position={[10, 10, 5]} intensity={1} />
 
-              <Tatami size={8} tilesPerSide={8} />
+              <Tatami 
+                size={8} 
+                tilesPerSide={8}
+                perimeterColor={tatamiPerimeterColor}
+                interiorColor={tatamiInteriorColor}
+                baseColor={tatamiBaseColor}
+              />
               <ModelPositionController selectedTechnique={currentTechnique}>
                 <Humanoid
                   upperArmLeftRef={upperArmLeftRef}
@@ -664,6 +1236,7 @@ export function Scene({ children }: CustomSceneProps) {
                 Reset Height
               </button>
 
+
               {/* Limb details moved below Save Position button */}
               <div
                 style={{
@@ -695,9 +1268,7 @@ export function Scene({ children }: CustomSceneProps) {
           {/* Left side panel */}
           <div className="techniques-grid">
             <TabPanel>
-
-
-              {/* Positions tab as a SEPARATE tab */}
+              {/* Positions tab */}
               <div className="positions-tab">
                 <h3>Saved Positions</h3>
                 <Positions onPositionSelect={handlePositionSelect} key={refreshTrigger} />

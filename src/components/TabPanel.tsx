@@ -14,15 +14,17 @@ export function TabPanel({ children }: TabPanelProps) {
   // Handle tab change
   const handleTabChange = (tabIndex: number) => {
     setActiveTab(tabIndex);
-    // If switching to positions tab (index 1), refresh positions
-    if (tabIndex === 1) {
+    // If switching to positions tab (index 0), refresh positions
+    if (tabIndex === 0) {
       console.log('Switched to positions tab, refreshing positions');
       refreshPositions();
     }
   };
 
+  // Convert children to array to ensure proper indexing
+  const childrenArray = React.Children.toArray(children);
 
-  // first position tab is positions, second is techniques
+  // first tab is positions, second is techniques
   return (
     <div className="tab-panel">
       <div className="tab-buttons">
@@ -40,7 +42,7 @@ export function TabPanel({ children }: TabPanelProps) {
         </button>
       </div>
       <div className="tab-content">
-        {children[activeTab]}
+        {childrenArray[activeTab]}
       </div>
     </div>
   );

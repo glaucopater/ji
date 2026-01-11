@@ -97,6 +97,7 @@ yarn preview
   - Articulated arms (upper/lower) with hands
   - Articulated legs (upper/lower) with feet
   - Yellow joint indicators for better visualization
+- Initial positioning ensures feet are properly aligned on the tatami mat
 - Real-time position updates
 - Smooth transitions between positions
 
