@@ -1,9 +1,18 @@
 interface TatamiProps {
   size?: number; // Size of the tatami in meters
   tilesPerSide?: number; // Number of tiles per side
+  perimeterColor?: string; // Color of the perimeter tiles
+  interiorColor?: string; // Color of the interior tiles
+  baseColor?: string; // Color of the base layer
 }
 
-export function Tatami({ size = 10, tilesPerSide = 10 }: TatamiProps) {
+export function Tatami({ 
+  size = 10, 
+  tilesPerSide = 10,
+  perimeterColor = '#006400',
+  interiorColor = '#8B0000',
+  baseColor = '#2b2b2b'
+}: TatamiProps) {
   const tileSize = size / tilesPerSide;
   const tiles = [];
 
@@ -29,7 +38,7 @@ export function Tatami({ size = 10, tilesPerSide = 10 }: TatamiProps) {
         >
           <planeGeometry args={[tileSize * 0.95, tileSize * 0.95]} />
           <meshStandardMaterial 
-            color={isPerimeter ? '#006400' : '#8B0000'} 
+            color={isPerimeter ? perimeterColor : interiorColor} 
             roughness={0.8}
             metalness={0.2}
           />
@@ -43,7 +52,7 @@ export function Tatami({ size = 10, tilesPerSide = 10 }: TatamiProps) {
     <group>
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.02, 0]}>
         <planeGeometry args={[size, size]} />
-        <meshStandardMaterial color="#2b2b2b" roughness={0.9} />
+        <meshStandardMaterial color={baseColor} roughness={0.9} />
       </mesh>
       {tiles}
     </group>

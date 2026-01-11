@@ -51,6 +51,12 @@
   overflow: hidden;
 }
 
+.app > * {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
 .techniques-grid {
   width: 300px;
   padding: 1rem;

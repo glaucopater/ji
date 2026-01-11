@@ -4,6 +4,7 @@ A web-based 3D judo technique visualization tool.
 
 ![JI](public/logo.png)
 
+![Judo Scene](public/demo/judo-scene-2026-01-11T18-01-10-956Z.png)
 
 ## Features
 
@@ -97,6 +98,7 @@ yarn preview
   - Articulated arms (upper/lower) with hands
   - Articulated legs (upper/lower) with feet
   - Yellow joint indicators for better visualization
+- Initial positioning ensures feet are properly aligned on the tatami mat
 - Real-time position updates
 - Smooth transitions between positions
 

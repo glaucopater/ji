@@ -16,6 +16,7 @@ Key Principles
 - Avoid files longer than 150-200 lines of code.
 - When I tell you that the feature is working fine, than: document it in the readme.md, add unit tests
 - If I tell you "loop" or "rabbit hole" it means that you are not doing any progress, change strategy
+- Periodically check if any file is too big
   
 
 Naming Conventions

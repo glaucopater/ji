@@ -138,7 +138,7 @@ export function Humanoid({
 
   return (
     <group>
-      <group position={[0, 0.1, 0]}>
+      <group position={[0, 0.5, 0]}>
         <Torso
           upperTorsoRef={upperTorsoRef}
           lowerTorsoRef={lowerTorsoRef}
