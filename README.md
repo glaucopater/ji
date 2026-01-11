@@ -4,6 +4,7 @@ A web-based 3D judo technique visualization tool.
 
 ![JI](public/logo.png)
 
+![Judo Scene](public/demo/judo-scene-2026-01-11T18-01-10-956Z.png)
 
 ## Features
 
